@@ -39,6 +39,8 @@ def test_list_providers_returns_registered_names():
 
 def test_auto_register_skips_placeholder_keys(monkeypatch):
     """占位符 key 不应注册成 provider"""
+    import dotenv
+    monkeypatch.setattr(dotenv, "load_dotenv", lambda: None)  # 隔离 .env 污染
     monkeypatch.setenv("MINIMAX_API_KEY", "your_minimax_key")
     monkeypatch.setenv("DEEPSEEK_API_KEY", "your_deepseek_key")
     monkeypatch.delenv("DOUBAO_API_KEY", raising=False)
@@ -50,6 +52,8 @@ def test_auto_register_skips_placeholder_keys(monkeypatch):
 
 def test_auto_register_real_key(monkeypatch):
     """真实 key 注册对应 provider"""
+    import dotenv
+    monkeypatch.setattr(dotenv, "load_dotenv", lambda: None)  # 隔离 .env 污染
     monkeypatch.setenv("MINIMAX_API_KEY", "sk-realminimax123")
     monkeypatch.setenv("MINIMAX_API_BASE", "https://api.minimaxi.com/anthropic")
     monkeypatch.setenv("MINIMAX_MODEL", "MiniMax M3")

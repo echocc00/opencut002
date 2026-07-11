@@ -29,8 +29,8 @@ source = ["src"]
 branch = false
 
 [tool.coverage.report]
-# 当前 72%；80% 目标需补 tools/ 外部资源模块测试。先设 70% 防回归。
-fail_under = 70
+# 80% 目标达成（工具模块测试补全后）
+fail_under = 80
 show_missing = true
 omit = ["src/__init__.py"]
 

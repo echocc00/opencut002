@@ -35,11 +35,11 @@ class TestImageMatcher:
     async def test_match_images_fallback_uses_hint(self):
         from src.tools.image_matcher import match_images
         result = await match_images(
-            [{"text": "a", "image_hint": "hint.jpg"}],
-            [{"file": "img1.jpg"}],
+            [{"text": "a", "image_hint": "img2.jpg"}],
+            [{"file": "img1.jpg"}, {"file": "img2.jpg"}],
             ai_complete=None,
         )
-        assert result["0"] == "hint.jpg"
+        assert result["0"] == "img2.jpg"  # hint 是真实可用图片，优先用 hint
 
     @pytest.mark.asyncio
     async def test_match_images_fallback_sequential(self):
@@ -66,11 +66,11 @@ class TestImageMatcher:
             raise RuntimeError("AI error")
 
         result = await match_images(
-            [{"text": "a", "image_hint": "hint.jpg"}],
-            [{"file": "img1.jpg"}],
+            [{"text": "a", "image_hint": "img2.jpg"}],
+            [{"file": "img1.jpg"}, {"file": "img2.jpg"}],
             ai_complete=mock_ai,
         )
-        assert result["0"] == "hint.jpg"
+        assert result["0"] == "img2.jpg"  # AI 失败 -> hint（真实可用）兜底
 
 
 # ========== migration ==========

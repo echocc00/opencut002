@@ -45,22 +45,32 @@ class TTSAgent(BaseStageAgent):
             log.error(f"TTS生成失败: {e}")
             return {"data": {"audio_path": "", "word_timestamps": [], "error": str(e)}, "confidence": 20.0}
 
-        # 转录获取词级时间戳
+        # 转录获取词级时间戳；whisperx 可信度高，fallback 是字符估算需降级
         transcriber = Transcriber(device="cpu")
+        method = "fallback"
         try:
             result = transcriber.transcribe(audio_path, known_text=full_text)
             word_timestamps = result.words
+            method = result.method
         except Exception as e:
             log.warning(f"转录失败: {e}")
             word_timestamps = []
+
+        if not word_timestamps:
+            transcribe_conf = 40.0
+        elif method == "whisperx":
+            transcribe_conf = 80.0
+        else:
+            transcribe_conf = 50.0
 
         return {
             "data": {
                 "audio_path": audio_path,
                 "word_timestamps": word_timestamps,
                 "full_text": full_text,
+                "transcribe_method": method,
             },
-            "confidence": 80.0 if word_timestamps else 40.0,
+            "confidence": transcribe_conf,
         }
 
     def _build_prompt(self, *a): return ""

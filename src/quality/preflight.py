@@ -15,7 +15,7 @@ STAGE_INPUT_SCHEMA: dict[str, dict[str, list[str]]] = {
     "tts": {"copywriting": ["paragraphs"], "voice_selection": ["selected"]},
     "storyboard": {"copywriting": ["paragraphs"], "tts": ["audio_path"]},
     "bgm": {"storyboard": ["segments"]},
-    "rhythm": {"storyboard": ["segments"], "bgm": ["candidates"]},
+    "rhythm": {"storyboard": ["segments"]},
     "title": {"copywriting": ["paragraphs"]},
     "cover": {"storyboard": ["segments"]},
     "fine_cut": {"storyboard": ["segments"], "rhythm": ["segment_timings"]},

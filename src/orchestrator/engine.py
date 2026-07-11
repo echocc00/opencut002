@@ -143,6 +143,16 @@ class PipelineEngine:
             for i, s in enumerate(segments):
                 if not s.get("image"):
                     issues.append(f"段落{i}无图片")
+            # TTS 音频必须存在，否则会渲染无声视频（silent failure 防护）
+            # 仅当 tts 在当前管道中时检查（12 阶段冒烟/e2e 跳过 tts 时不强求）
+            pipeline_stage_names = {s["name"] for s in self.get_stages()}
+            if "tts" in pipeline_stage_names:
+                tts_output = state.get_stage_output("tts")
+                audio_path = tts_output.get("audio_path", "") if tts_output else ""
+                if not audio_path:
+                    issues.append("TTS 音频路径为空")
+                elif not Path(audio_path).exists():
+                    issues.append(f"TTS 音频文件不存在: {audio_path}")
             passed = len(issues) == 0
             return {"data": {"passed": passed, "issues": issues}, "confidence": 90.0 if passed else 40.0}
 

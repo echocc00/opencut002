@@ -1,8 +1,18 @@
 """Provider 注册表 - 支持 MiniMax (Anthropic兼容) 和 OpenAI 格式"""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 import httpx
+
+
+@dataclass
+class ProviderResponse:
+    """Provider 调用结果（含 token 用量用于成本追踪）"""
+    text: str
+    input_tokens: int = 0
+    output_tokens: int = 0
+    model: str = ""
 
 
 class Provider:
@@ -10,9 +20,13 @@ class Provider:
         self.name = name
         self._complete_fn = complete_fn
 
-    async def complete(self, prompt: str, **kwargs: Any) -> str:
+    async def complete(self, prompt: str, **kwargs: Any) -> ProviderResponse:
         if self._complete_fn:
-            return await self._complete_fn(prompt, **kwargs)
+            result = await self._complete_fn(prompt, **kwargs)
+            if isinstance(result, ProviderResponse):
+                return result
+            # complete_fn 返回 str（如测试 mock）-> 包装，无 usage
+            return ProviderResponse(text=str(result), model=self.name)
         raise NotImplementedError(f"Provider {self.name} has no complete function")
 
 
@@ -31,7 +45,13 @@ def make_minimax_provider(api_key: str, api_base: str = "https://api.minimaxi.co
         if resp.status_code != 200:
             raise RuntimeError(f"MiniMax API错误 {resp.status_code}: {resp.text[:200]}")
         data = resp.json()
-        return data["content"][0]["text"]
+        usage = data.get("usage", {})
+        return ProviderResponse(
+            text=data["content"][0]["text"],
+            input_tokens=usage.get("input_tokens", 0),
+            output_tokens=usage.get("output_tokens", 0),
+            model=model,
+        )
 
     return Provider("minimax", complete_fn)
 
@@ -46,7 +66,13 @@ def make_openai_provider(name: str, api_base: str, api_key: str, model: str):
         resp = await client.chat.completions.create(
             model=model, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens,
         )
-        return resp.choices[0].message.content
+        usage = resp.usage
+        return ProviderResponse(
+            text=resp.choices[0].message.content,
+            input_tokens=usage.prompt_tokens if usage else 0,
+            output_tokens=usage.completion_tokens if usage else 0,
+            model=model,
+        )
 
     return Provider(name, complete_fn)
 

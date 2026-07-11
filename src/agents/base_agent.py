@@ -63,17 +63,22 @@ class BaseStageAgent(ABC):
         )
         state.last_provider = selection.winner
 
-        # 4. 调用 AI
+        # 4. 调用 AI（返回 ProviderResponse，含 token 用量）
         response = await self._call_ai(selection.winner, prompt)
 
         # 5. 解析输出
-        output = self._parse_output(response)
+        output = self._parse_output(response.text)
 
         # #10: 统一用 confidence_scorer 计算置信度
         required_keys = get_required_keys(stage.name)
         confidence = calculate_confidence(output, required_keys)
 
-        # 6. 记录决策
+        # 成本追踪
+        from ..providers.pricing import calc_cost
+        cost = calc_cost(response.input_tokens, response.output_tokens, selection.winner)
+        state.cost_total = state.cost_total + cost
+
+        # 6. 记录决策（含 token 用量、模型、成本、技能文件）
         self.decision_logger.log(
             stage=stage.name,
             provider=selection.winner,
@@ -81,6 +86,11 @@ class BaseStageAgent(ABC):
             reasoning=selection.reasoning,
             confidence=confidence,
             output_summary=str(output)[:500],
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            model=response.model or selection.winner,
+            prompt_skill_file=f"domains/{state.domain}/skills/{stage.name}.md",
+            cost=cost,
         )
 
         return {"data": output, "confidence": confidence}
@@ -106,7 +116,7 @@ class BaseStageAgent(ABC):
                 parts.append(f"[{name}] {summary}")
         return "\n".join(parts)
 
-    async def _call_ai(self, provider_name: str, prompt: str) -> str:
+    async def _call_ai(self, provider_name: str, prompt: str):
         from ..providers.provider_registry import get_provider
         provider = get_provider(provider_name)
         return await provider.complete(prompt)

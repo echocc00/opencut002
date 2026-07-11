@@ -1,0 +1,14 @@
+# Provider 单价（美元 / 1K tokens），用于成本追踪
+# 价格为近似参考值，请按各厂商最新定价调整
+minimax:
+  input_per_1k: 0.01
+  output_per_1k: 0.03
+deepseek:
+  input_per_1k: 0.001
+  output_per_1k: 0.002
+doubao:
+  input_per_1k: 0.0008
+  output_per_1k: 0.002
+qwen:
+  input_per_1k: 0.002
+  output_per_1k: 0.006

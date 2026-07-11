@@ -109,7 +109,7 @@ class TestFastAPIApp:
 
     def test_dockerfile_uses_app(self):
         """Dockerfile CMD指向app.py"""
-        content = Path("Dockerfile").read_text()
+        content = Path("Dockerfile").read_text(encoding="utf-8")
         assert "src.api.app:app" in content
 
 
@@ -127,7 +127,7 @@ class TestP0Fixes:
 
     def test_input_json_uses_uuid(self):
         """remotion_renderer 使用 uuid 文件名"""
-        content = Path("src/tools/remotion_renderer.py").read_text()
+        content = Path("src/tools/remotion_renderer.py").read_text(encoding="utf-8")
         assert "uuid" in content
 
     def test_base_agent_accepts_optional_deps(self):

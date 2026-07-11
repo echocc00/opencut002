@@ -139,7 +139,7 @@ class TestP1_18_DuckingThreshold:
 
     def test_release_is_05(self):
         """release 参数应为 0.5"""
-        content = Path("src/tools/audio_processor.py").read_text()
+        content = Path("src/tools/audio_processor.py").read_text(encoding="utf-8")
         assert "release=0.5" in content
 
 

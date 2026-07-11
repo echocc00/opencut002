@@ -152,7 +152,7 @@ class TestE2EImportPath:
     """E2E测试使用新的import路径"""
 
     def test_e2e_uses_new_paths(self):
-        content = open("tests/test_m23_e2e.py").read()
+        content = open("tests/test_m23_e2e.py", encoding="utf-8").read()
         assert "highlight_selection_agent" in content
         assert "highlight_agent" not in content.replace("highlight_selection_agent", "")
 
@@ -161,6 +161,6 @@ class TestConcurrencyControl:
     """并发控制"""
 
     def test_running_projects_set_exists(self):
-        content = open("src/api/project_routes.py").read()
+        content = open("src/api/project_routes.py", encoding="utf-8").read()
         assert "_running_projects" in content
         assert "409" in content  # 冲突时返回409

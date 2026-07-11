@@ -62,7 +62,7 @@ def test_provider_selector_logs_decision():
         selector.select(TaskType.TOPIC_GENERATION, ["doubao", "deepseek"], log_path=log_path)
         assert log_path.exists()
         import json
-        lines = log_path.read_text().strip().split("\n")
+        lines = log_path.read_text(encoding="utf-8").strip().split("\n")
         assert len(lines) >= 1
         entry = json.loads(lines[0])
         assert "winner" in entry

@@ -171,7 +171,7 @@ class TestPanelRoutesPaths:
     """panel_routes 不硬编码路径"""
 
     def test_uses_get_settings(self):
-        content = open("src/api/panel_routes.py").read()
+        content = open("src/api/panel_routes.py", encoding="utf-8").read()
         assert "get_settings" in content
         assert 'Path("data/projects' not in content
         assert 'Path(f"data/projects' not in content

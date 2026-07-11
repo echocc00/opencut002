@@ -44,7 +44,7 @@ class TestFieldNameContract:
 
     def test_video_composition_expects_camelcase(self):
         """VideoComposition.tsx 读取的字段名必须是 camelCase"""
-        content = Path("remotion/src/VideoComposition.tsx").read_text()
+        content = Path("remotion/src/VideoComposition.tsx").read_text(encoding="utf-8")
         # 检查不包含 snake_case 访问
         snake_case_patterns = [
             "data.title_duration", "data.voice_path", "data.bgm_path",
@@ -57,7 +57,7 @@ class TestFieldNameContract:
 
     def test_word_subtitle_expects_word_start_end(self):
         """WordByWordSubtitle 组件期望 word/start/end 字段"""
-        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text()
+        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text(encoding="utf-8")
         assert "w.start" in content, "缺少 w.start 访问"
         assert "w.end" in content, "缺少 w.end 访问"
         assert "w.word" in content, "缺少 w.word 访问"
@@ -84,14 +84,14 @@ class TestRemotionConstraints:
 
     def test_no_color_interpolate(self):
         """WordByWordSubtitle 不应用 interpolate 处理颜色"""
-        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text()
+        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text(encoding="utf-8")
         # 检查 interpolate 不用于颜色
         # 颜色应该直接设置或用 CSS transition
         assert "transition" in content, "颜色过渡应使用 CSS transition"
 
     def test_interpolate_range_safe(self):
         """interpolate 的输入范围应处理短词边缘 case"""
-        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text()
+        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text(encoding="utf-8")
         # 应该有 wordDur 检查
         assert "wordDur" in content, "应检查 wordDur 处理短词"
         # 应该有 min/clamp 逻辑
@@ -104,7 +104,7 @@ class TestEnvironmentConstraints:
 
     def test_data_flow_contract_has_remotion_section(self):
         """数据流契约文档应包含 Remotion 边界定义"""
-        content = Path("docs/data-flow-contract.md").read_text()
+        content = Path("docs/data-flow-contract.md").read_text(encoding="utf-8")
         assert "Remotion" in content or "remotion" in content, \
             "数据流契约应包含 Remotion 边界定义"
         assert "camelCase" in content, "应定义 camelCase 转换规则"

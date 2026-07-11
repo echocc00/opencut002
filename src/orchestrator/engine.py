@@ -182,7 +182,7 @@ class PipelineEngine:
     def get_stages(self) -> list[dict]:
         return self.pipeline["pipeline"]["stages"]
 
-    async def run(self, state: ProjectState) -> ProjectState:
+    async def run(self, state: ProjectState, start_from: str | None = None) -> ProjectState:
         if self.dry_run:
             stages = self.get_stages()
             print(f"[DRY-RUN] {len(stages)} stages would execute:")
@@ -190,8 +190,14 @@ class PipelineEngine:
                 print(f"  - {s['name']} ({s.get('type','auto')}) requires={s.get('requires',[])}")
             return state
 
+        started = start_from is None
         for stage_def in self.get_stages():
             name = stage_def["name"]
+            if not started:
+                if name == start_from:
+                    started = True
+                else:
+                    continue
             stage_type = stage_def.get("type", "auto")
             stage = state.get_stage(name)
 
@@ -212,45 +218,9 @@ class PipelineEngine:
                 state.save(self.data_dir)
                 continue
 
-            # 为特定阶段注入 input_data
-            if name == "highlight_selection" and not stage.input_data.get("highlights"):
-                from ..config import get_domain_config
-                domain_cfg = get_domain_config(state.domain)
-                stage.input_data["highlights"] = domain_cfg.get_highlights()
-
-            # storyboard 需要TTS总时长
-            if name == "storyboard" and "tts_total_duration" not in stage.input_data:
-                tts_output = state.get_stage_output("tts")
-                if tts_output:
-                    words = tts_output.get("word_timestamps", [])
-                    if words:
-                        tts_dur = max(w.get("end", 0) for w in words)
-                        stage.input_data["tts_total_duration"] = tts_dur
-
-            # copywriting 需要已确认的亮点方案
-            if name == "copywriting" and not stage.input_data.get("confirmed_highlights"):
-                hl_output = state.get_stage_output("highlight_selection")
-                if hl_output and hl_output.get("selected", -1) >= 0:
-                    opts = hl_output.get("options", [])
-                    sel = hl_output["selected"]
-                    if 0 <= sel < len(opts):
-                        stage.input_data["confirmed_highlights"] = opts[sel]
-
-            # voice_selection 需要可用音色列表
-            if name == "voice_selection" and not stage.input_data.get("available_voices"):
-                from ..config import get_domain_config
-                domain_cfg = get_domain_config(state.domain)
-                stage.input_data["available_voices"] = domain_cfg.get_voices()
-
-            # bgm 需要可用 BGM 列表
-            if name == "bgm" and not stage.input_data.get("available_bgm"):
-                from ..config import get_domain_config, get_settings
-                domain_cfg = get_domain_config(state.domain)
-                bgm_dir = domain_cfg.dir / "bgm"
-                if bgm_dir.exists():
-                    stage.input_data["available_bgm"] = [f.name for f in bgm_dir.glob("*.mp3")]
-                else:
-                    stage.input_data["available_bgm"] = []
+            # 为特定阶段注入 input_data（领域配置/上游输出）
+            from .stage_input_injector import inject_stage_input
+            inject_stage_input(state, stage)
 
             stage.status = StageStatus.IN_PROGRESS
             stage.started_at = datetime.now()
@@ -362,7 +332,7 @@ class PipelineEngine:
 
         state.save(self.data_dir)
         if approved:
-            await self.run(state)
+            await self.run(state, start_from=stage_name)
         return state
 
     async def resume(self, state: ProjectState) -> ProjectState:

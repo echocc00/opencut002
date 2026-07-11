@@ -191,11 +191,16 @@ class PipelineEngine:
                 log.warning(f"Stage {name}: prerequisites not met, skipping")
                 continue
 
-            # 契约校验（仅警告，不阻断）
+            # 契约校验：上游在管道中却没产出必需字段 -> 标 ERROR 跳过（不再静默 warn）
             from ..quality.preflight import check_stage_inputs
-            input_ok, input_issues = check_stage_inputs(state, name)
+            pipeline_stages = {s["name"] for s in self.get_stages()}
+            input_ok, input_issues = check_stage_inputs(state, name, available_stages=pipeline_stages)
             if not input_ok:
-                log.warning(f"Stage {name}: input contract warning: {input_issues}")
+                log.error(f"Stage {name}: input contract failed: {input_issues}")
+                stage.status = StageStatus.ERROR
+                stage.error = f"input contract failed: {input_issues}"
+                state.save(self.data_dir)
+                continue
 
             # 为特定阶段注入 input_data
             if name == "highlight_selection" and not stage.input_data.get("highlights"):
@@ -284,11 +289,24 @@ class PipelineEngine:
                             state.save(self.data_dir)
                             continue
 
-                # postflight: 阶段输出 schema 校验
-                from ..quality.postflight import validate_output
+                # postflight: schema 校验 + 完整性校验，失败则 RETRY（不再静默 warn）
+                from ..quality.postflight import validate_output, check_output_completeness
                 output_ok, output_issues = validate_output(name, stage.output_data)
-                if not output_ok:
-                    log.warning(f"Stage {name}: output schema issues: {output_issues}")
+                complete_ok, complete_issues = check_output_completeness(name, stage.output_data)
+                if not output_ok or not complete_ok:
+                    all_issues = output_issues + complete_issues
+                    log.warning(f"Stage {name}: output contract issues: {all_issues}")
+                    retry_limit = get_auto_retry_limit(state.approval_mode)
+                    if stage.retry_count < retry_limit:
+                        stage.retry_count += 1
+                        stage.status = StageStatus.PENDING
+                        state.save(self.data_dir)
+                        continue
+                    log.error(f"Stage {name}: output contract exhausted retries: {all_issues}")
+                    stage.status = StageStatus.ERROR
+                    stage.error = f"output contract failed: {all_issues}"
+                    state.save(self.data_dir)
+                    continue
 
                 stage.status = StageStatus.COMPLETED
                 stage.completed_at = datetime.now()
@@ -298,7 +316,7 @@ class PipelineEngine:
                     self.event_store.emit_stage_completed(name, stage.output_data, stage.confidence_score or 0)
 
             except Exception as e:
-                log.error(f"Stage {name} failed: {e}")
+                log.error(f"Stage {name} failed: {e}", exc_info=True)
                 stage.status = StageStatus.ERROR
                 stage.error = str(e)
                 if self.event_store:

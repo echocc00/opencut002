@@ -20,12 +20,14 @@ class TestDataChainCopywriting:
 
         clear_registry()
         async def mock_complete(prompt: str, **kw) -> str:
+            # 注意：paragraphs 必须先于 directions 判断——copywriting 的 upstream_context
+            # 含 topic 的 directions 输出，会误匹配。R04 后 postflight 阻断空 paragraphs。
+            if '"paragraphs"' in prompt:
+                return '{"paragraphs": [{"text": "test", "target_duration": 3.0, "image_hint": "img.jpg", "highlight_ref": "mystery_hook", "emotion_tone": "悬念"}], "tone": "emotional"}'
             if '"directions"' in prompt:
                 return '{"directions": [{"name":"test","hook":"suspense","psychology":"x","ref_type":"x","why_work":"x"}], "selected": 0}'
             if '"highlight_ids"' in prompt:
                 return '{"options": [{"highlight_ids": ["mystery_hook"], "highlight_names": ["悬念"], "selection_reason": "x", "presentation_style": "悬念式", "expected_effect": "x"}], "selected": 0}'
-            if '"paragraphs"' in prompt:
-                return '{"paragraphs": [{"text": "test", "target_duration": 3.0, "image_hint": "img.jpg", "highlight_ref": "mystery_hook", "emotion_tone": "悬念"}], "tone": "emotional"}'
             return '{}'
         for n in ["deepseek", "doubao", "qwen"]:
             register_provider(n, Provider(n, mock_complete))

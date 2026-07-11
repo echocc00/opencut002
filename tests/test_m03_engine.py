@@ -80,7 +80,10 @@ def test_semi_auto_confidence_based(engine):
 async def test_engine_runs_auto_stages(engine, tmp_path):
     """注册 mock handler -> 运行管道 -> auto 阶段执行"""
     async def mock_handler(state, stage):
-        return {"data": {"result": f"output of {stage.name}"}, "confidence": 75.0}
+        if stage.name == "material_analysis":
+            return {"data": {"images": [{"file": "img.jpg"}], "destination": "test",
+                             "result": f"output of {stage.name}"}, "confidence": 75.0}
+        return {"data": {"hot_topics": ["test"], "result": f"output of {stage.name}"}, "confidence": 75.0}
 
     engine.data_dir = tmp_path
     # 只注册前 3 个阶段（全是 auto）

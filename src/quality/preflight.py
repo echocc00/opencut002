@@ -32,14 +32,21 @@ def check_prerequisites(state: ProjectState, requires: list[str]) -> tuple[bool,
     return (len(issues) == 0, issues)
 
 
-def check_stage_inputs(state: ProjectState, stage_name: str) -> tuple[bool, list[str]]:
-    """检查上游阶段的输出是否包含必需字段（契约校验）"""
+def check_stage_inputs(state: ProjectState, stage_name: str,
+                       available_stages: set[str] | None = None) -> tuple[bool, list[str]]:
+    """检查上游阶段的输出是否包含必需字段（契约校验）。
+
+    available_stages 为当前管道包含的阶段名集合；不在管道中的上游阶段跳过要求
+    （12 阶段冒烟不含 tts，storyboard 不应强求 tts 输出；--full 含 tts 则强求）。
+    """
     schema = STAGE_INPUT_SCHEMA.get(stage_name)
     if not schema:
         return (True, [])  # 无契约定义的阶段跳过
 
     issues: list[str] = []
     for upstream, required_fields in schema.items():
+        if available_stages is not None and upstream not in available_stages:
+            continue  # 上游阶段不在当前管道中，跳过该要求
         upstream_out = state.get_stage_output(upstream)
         if not upstream_out:
             issues.append(f"上游 {upstream} 无输出数据")

@@ -4,7 +4,7 @@ import { ThemeConfig } from "../theme";
 export const TitleScene: React.FC<{ text: string; theme: ThemeConfig }> = ({ text, theme }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const scale = spring({ frame, fps, config: theme.springConfig });
+  const scale = spring({ frame, fps, config: theme.enterSpring });
   const opacity = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: "clamp" });
 
   return (

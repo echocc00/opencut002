@@ -1,6 +1,9 @@
 /**
  * 主题系统 - 基于 OpenMontage 的 ThemeConfig
  * 每个领域对应一个主题，消除硬编码颜色
+ *
+ * R13: springConfig 拆为 enterSpring（入场动画）+ captionSpring（字幕动画），
+ * 不同领域可配不同动画质感。
  */
 
 export interface ThemeConfig {
@@ -12,7 +15,8 @@ export interface ThemeConfig {
   mutedTextColor: string;
   headingFont: string;
   bodyFont: string;
-  springConfig: { damping: number; stiffness: number; mass: number };
+  enterSpring: { damping: number; stiffness: number; mass: number };
+  captionSpring: { damping: number; stiffness: number; mass: number };
   transitionDuration: number;
   captionHighlightColor: string;
   captionBackgroundColor: string;
@@ -29,7 +33,8 @@ const TRAVEL_THEME: ThemeConfig = {
   mutedTextColor: "#A9A49C",
   headingFont: "Noto Serif SC, serif",
   bodyFont: "Noto Sans SC, sans-serif",
-  springConfig: { damping: 15, stiffness: 100, mass: 0.8 },
+  enterSpring: { damping: 15, stiffness: 100, mass: 0.8 },
+  captionSpring: { damping: 18, stiffness: 120, mass: 0.8 },
   transitionDuration: 0.4,
   captionHighlightColor: "#D4734A",
   captionBackgroundColor: "rgba(0,0,0,0.65)",
@@ -46,7 +51,8 @@ const EDUCATION_THEME: ThemeConfig = {
   mutedTextColor: "#A9A49C",
   headingFont: "Noto Sans SC, sans-serif",
   bodyFont: "Noto Sans SC, sans-serif",
-  springConfig: { damping: 18, stiffness: 120, mass: 0.8 },
+  enterSpring: { damping: 18, stiffness: 120, mass: 0.8 },
+  captionSpring: { damping: 20, stiffness: 140, mass: 0.8 },
   transitionDuration: 0.3,
   captionHighlightColor: "#4A7C6F",
   captionBackgroundColor: "rgba(0,0,0,0.65)",
@@ -63,7 +69,8 @@ const KNOWLEDGE_PAID_THEME: ThemeConfig = {
   mutedTextColor: "#A9A49C",
   headingFont: "Noto Serif SC, serif",
   bodyFont: "Noto Sans SC, sans-serif",
-  springConfig: { damping: 12, stiffness: 80, mass: 0.8 },
+  enterSpring: { damping: 12, stiffness: 80, mass: 0.8 },
+  captionSpring: { damping: 16, stiffness: 110, mass: 0.8 },
   transitionDuration: 0.4,
   captionHighlightColor: "#D4734A",
   captionBackgroundColor: "rgba(0,0,0,0.65)",

@@ -23,10 +23,6 @@ export function resolveAsset(src: string): string {
     return `file://${src}`;
   }
 
-  // 相对路径 -> staticFile()
-  try {
-    return staticFile(src);
-  } catch {
-    return src;
-  }
+  // 相对路径 -> staticFile()（staticFile 不抛异常，缺失文件在渲染时 404）
+  return staticFile(src);
 }

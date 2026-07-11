@@ -28,7 +28,7 @@ export const SegmentScene: React.FC<{
   const motion = useCameraMotion(pickCameraMotion(segmentIndex), frame, segFrames);
 
   // 入场动画
-  const enterScale = spring({ frame, fps, config: theme.springConfig });
+  const enterScale = spring({ frame, fps, config: theme.enterSpring });
   const enterOpacity = interpolate(frame, [0, 6], [0, 1], { extrapolateRight: "clamp" });
 
   // 退出淡出
@@ -93,6 +93,7 @@ export const SegmentScene: React.FC<{
       <WordByWordSubtitle
         words={subtitleWords || []}
         fallbackText={subtitle}
+        springConfig={theme.captionSpring}
         style={{
           activeColor: theme.captionHighlightColor,
           pastColor: theme.captionPastColor,

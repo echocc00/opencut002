@@ -11,14 +11,15 @@ export const WordByWordSubtitle: React.FC<{
   words: { word: string; start: number; end: number }[];
   style: { activeColor: string; pastColor: string; upcomingColor: string };
   fallbackText?: string;
-}> = ({ words, style, fallbackText }) => {
+  springConfig?: { damping: number; stiffness: number; mass: number };
+}> = ({ words, style, fallbackText, springConfig }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTime = frame / fps;
 
   const enterProgress = spring({
     frame, fps,
-    config: { damping: 18, stiffness: 120 },
+    config: springConfig || { damping: 18, stiffness: 120 },
   });
 
   return (

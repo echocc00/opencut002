@@ -5,7 +5,7 @@ import { resolveAsset } from "../utils/resolveAsset";
 export const CoverScene: React.FC<{ image: string; title: string; theme: ThemeConfig }> = ({ image, title, theme }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const scale = spring({ frame, fps, config: theme.springConfig });
+  const scale = spring({ frame, fps, config: theme.enterSpring });
   const opacity = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: "clamp" });
   const bgOpacity = interpolate(frame, [0, 5], [0, 0.8], { extrapolateRight: "clamp" });
 

@@ -52,10 +52,16 @@ class BaseStageAgent(ABC):
         # 2. 构建 prompt
         prompt = self._build_prompt(skill_context, upstream_context, user_note, stage.input_data)
 
-        # 3. 选择 provider
+        # 3. 选择 provider（从已注册 provider 中选；传 previous_provider 让 continuity 评分生效）
         task_type = self.get_task_type()
-        candidates = ["doubao", "deepseek", "qwen"]
-        selection = self.provider_selector.select(task_type, candidates)
+        from ..providers.provider_registry import list_providers
+        candidates = list_providers()
+        if not candidates:
+            raise RuntimeError("无可用 Provider，请配置环境变量（如 MINIMAX_API_KEY）")
+        selection = self.provider_selector.select(
+            task_type, candidates, previous_provider=state.last_provider or None
+        )
+        state.last_provider = selection.winner
 
         # 4. 调用 AI
         response = await self._call_ai(selection.winner, prompt)

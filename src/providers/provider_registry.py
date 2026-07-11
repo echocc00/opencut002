@@ -64,27 +64,60 @@ def get_provider(name: str) -> Provider:
 def clear_registry():
     _registry.clear()
 
-def auto_register_from_env():
-    """从环境变量自动注册 Provider"""
-    import os
-    key = os.environ.get("MINIMAX_API_KEY", "")
+def _is_real_key(key: str) -> bool:
+    """过滤占位符 key（空 / your_xxx / sk-xxx / 含 placeholder）"""
     if not key:
-        # 尝试从文件读取
-        try:
-            with open("../minimax-key.txt") as f:
-                lines = f.read().strip().split("\n")
-                key = lines[0].strip()
-                api_base = lines[2].strip() if len(lines) > 2 else "https://api.minimaxi.com/anthropic"
-                model = lines[4].strip() if len(lines) > 4 else "MiniMax M3"
-        except:
-            return False
-    else:
+        return False
+    k = key.strip().lower()
+    return not (k.startswith("your_") or k.startswith("sk-xxx") or "placeholder" in k)
+
+
+def auto_register_from_env() -> list[str]:
+    """从环境变量自动注册 Provider，返回已注册名列表。
+
+    每个 provider 独立实例（不再 4 名指同一对象）。占位符 key 跳过注册。
+    至少配置一个真实 key 才能运行管道。
+    """
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()  # .env -> os.environ（pydantic-settings 只填 Settings 字段，不动 os.environ）
+    registered: list[str] = []
+
+    # MiniMax（Anthropic 兼容）
+    minimax_key = os.environ.get("MINIMAX_API_KEY", "")
+    if _is_real_key(minimax_key):
         api_base = os.environ.get("MINIMAX_API_BASE", "https://api.minimaxi.com/anthropic")
         model = os.environ.get("MINIMAX_MODEL", "MiniMax M3")
+        register_provider("minimax", make_minimax_provider(minimax_key, api_base, model))
+        registered.append("minimax")
 
-    provider = make_minimax_provider(key, api_base, model)
-    register_provider("minimax", provider)
-    register_provider("deepseek", provider)
-    register_provider("doubao", provider)
-    register_provider("qwen", provider)
-    return True
+    # DeepSeek（OpenAI 兼容）
+    deepseek_key = os.environ.get("DEEPSEEK_API_KEY", "")
+    if _is_real_key(deepseek_key):
+        api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
+        model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+        register_provider("deepseek", make_openai_provider("deepseek", api_base, deepseek_key, model))
+        registered.append("deepseek")
+
+    # 豆包（OpenAI 兼容，火山引擎）
+    doubao_key = os.environ.get("DOUBAO_API_KEY", "")
+    if _is_real_key(doubao_key):
+        api_base = os.environ.get("DOUBAO_API_BASE", "https://ark.cn-beijing.volces.com/api/v3")
+        model = os.environ.get("DOUBAO_MODEL", "doubao-pro-32k")
+        register_provider("doubao", make_openai_provider("doubao", api_base, doubao_key, model))
+        registered.append("doubao")
+
+    # 通义千问（OpenAI 兼容，阿里 DashScope）
+    qwen_key = os.environ.get("QWEN_API_KEY", "")
+    if _is_real_key(qwen_key):
+        api_base = os.environ.get("QWEN_API_BASE", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+        model = os.environ.get("QWEN_MODEL", "qwen-plus")
+        register_provider("qwen", make_openai_provider("qwen", api_base, qwen_key, model))
+        registered.append("qwen")
+
+    return registered
+
+
+def list_providers() -> list[str]:
+    """返回已注册的 provider 名列表"""
+    return list(_registry.keys())

@@ -45,6 +45,7 @@ class ProjectState(BaseModel):
     quality_reports: list[dict[str, Any]] = Field(default_factory=list)
     decision_log_path: Optional[str] = None
     cost_total: float = 0.0
+    last_provider: str = ""
 
     def get_stage(self, name: str) -> StageState:
         if name not in self.stages:

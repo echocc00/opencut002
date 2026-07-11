@@ -24,6 +24,16 @@ gpu = ["whisperx>=3.1"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
+[tool.coverage.run]
+source = ["src"]
+branch = false
+
+[tool.coverage.report]
+# 当前 72%；80% 目标需补 tools/ 外部资源模块测试。先设 70% 防回归。
+fail_under = 70
+show_missing = true
+omit = ["src/__init__.py"]
+
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"

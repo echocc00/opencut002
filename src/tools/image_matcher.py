@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json
 import re
+from pathlib import Path
 from typing import Any
 
 
@@ -18,15 +19,20 @@ def build_matching_prompt(paragraphs: list[dict], available_images: list[dict]) 
     return f"""将文案段落与图片匹配。
 段落: {json.dumps(para_summary, ensure_ascii=False)}
 图片: {json.dumps(img_summary, ensure_ascii=False)}
-输出JSON: {{"matches": [{{"paragraph": 0, "image": "filename.jpg"}}]}}"""
+输出JSON: {{"matches": [{{"paragraph": 0, "image": "filename.jpg"}}]}}
+注意：image 字段必须填上面图片列表里的真实 file 值，不要编造或描述。"""
 
 
 async def match_images(paragraphs: list[dict], available_images: list[dict],
                        ai_complete=None) -> dict[str, str]:
-    """将文案段落与图片匹配"""
+    """将文案段落与图片匹配。返回 {段落index: 真实图片完整路径}"""
+    # 可用图片：filename -> 完整路径
+    available_files = [img.get("file", "") for img in available_images if img.get("file")]
+    available_map = {Path(f).name: f for f in available_files}
+
     matches: dict[str, str] = {}
 
-    # 优先尝试AI匹配
+    # 优先 AI 匹配
     if ai_complete:
         prompt = build_matching_prompt(paragraphs, available_images)
         try:
@@ -35,19 +41,26 @@ async def match_images(paragraphs: list[dict], available_images: list[dict],
             if m:
                 data = json.loads(m.group())
                 for match in data.get("matches", []):
-                    matches[str(match["paragraph"])] = match["image"]
+                    para = str(match.get("paragraph", ""))
+                    img = str(match.get("image", ""))
+                    # 校验 AI 返回的是真实可用图片（按文件名匹配），否则忽略
+                    img_name = Path(img).name if img else ""
+                    if img_name in available_map:
+                        matches[para] = available_map[img_name]
         except Exception:
             pass
 
-    # 回退：按顺序分配
+    # 回退：按顺序分配真实图片
     for i, para in enumerate(paragraphs):
         if str(i) not in matches:
             hint = para.get("image_hint", "")
-            if hint:
-                matches[str(i)] = hint
-            elif i < len(available_images):
-                matches[str(i)] = available_images[i].get("file", f"img_{i}.jpg")
+            hint_name = Path(hint).name if hint else ""
+            if hint_name in available_map:
+                matches[str(i)] = available_map[hint_name]
+            elif i < len(available_files):
+                matches[str(i)] = available_files[i]
             else:
-                matches[str(i)] = ""  # 空镜
+                matches[str(i)] = ""
 
     return matches
+

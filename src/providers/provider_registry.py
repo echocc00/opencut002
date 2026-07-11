@@ -62,9 +62,20 @@ def make_openai_provider(name: str, api_base: str, api_key: str, model: str):
     client = AsyncOpenAI(base_url=api_base, api_key=api_key)
 
     async def complete_fn(prompt: str, **kw) -> str:
+        import base64
         max_tokens = kw.get("max_tokens", 4096)
+        images = kw.get("images")  # 多模态：图片路径列表
+        content: list = [{"type": "text", "text": prompt}]
+        if images:
+            for img_path in images:
+                try:
+                    with open(img_path, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode()
+                    content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
+                except Exception:
+                    pass  # 跳过无法读取的图片
         resp = await client.chat.completions.create(
-            model=model, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens,
+            model=model, messages=[{"role": "user", "content": content}], max_tokens=max_tokens,
         )
         usage = resp.usage
         return ProviderResponse(

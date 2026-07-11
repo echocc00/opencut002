@@ -76,6 +76,15 @@ class RenderAgent(BaseStageAgent):
                 shutil.copy2(src, dest)
             return f"{state.project_id}/{src.name}"
 
+        # 校验 segment/cover images 是真实文件；storyboard AI 可能编造文件名，不存在则用素材兜底
+        material_files = [m.get("file", "") for m in state.materials if m.get("file")]
+        for i, seg in enumerate(segments):
+            img = seg.get("image", "")
+            if not img or not _Path(img).exists():
+                seg["image"] = material_files[i % len(material_files)] if material_files else ""
+        if cover_image and not _Path(cover_image).exists():
+            cover_image = material_files[0] if material_files else ""
+
         for seg in segments:
             if seg.get("image"):
                 seg["image"] = _stage_asset(seg["image"])

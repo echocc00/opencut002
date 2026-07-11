@@ -38,7 +38,7 @@ class TTSAgent(BaseStageAgent):
                     voice_key = voices[selected].get("edge_tts_voice", voice_key)
 
         # 生成TTS
-        audio_path = f"data/projects/{state.project_id}/audio/voice.wav"
+        audio_path = f"data/projects/{state.project_id}/audio/voice.mp3"
         try:
             await generate_tts(full_text, voice_key, audio_path)
         except Exception as e:

@@ -238,6 +238,11 @@ class PipelineEngine:
                         stage.output_data = output.get("data", output)
                         if "confidence" in output:
                             stage.confidence_score = output["confidence"]
+                        # handler 返回 state_updates（如 last_provider/cost_total）-> engine 集中应用
+                        # 注意：engine 按引用 in-place 应用（与 stage 变更一致），保证 state.json 持久化
+                        if "state_updates" in output:
+                            for k, v in output["state_updates"].items():
+                                setattr(state, k, v)
                 else:
                     log.warning(f"Stage {name}: no handler, auto-pass")
 

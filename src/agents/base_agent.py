@@ -61,7 +61,6 @@ class BaseStageAgent(ABC):
         selection = self.provider_selector.select(
             task_type, candidates, previous_provider=state.last_provider or None
         )
-        state.last_provider = selection.winner
 
         # 4. 调用 AI（返回 ProviderResponse，含 token 用量）
         response = await self._call_ai(selection.winner, prompt)
@@ -73,10 +72,9 @@ class BaseStageAgent(ABC):
         required_keys = get_required_keys(stage.name)
         confidence = calculate_confidence(output, required_keys)
 
-        # 成本追踪
+        # 成本追踪（通过 state_updates 返回，engine 不可变应用；handler 不直接 mutate state）
         from ..providers.pricing import calc_cost
         cost = calc_cost(response.input_tokens, response.output_tokens, selection.winner)
-        state.cost_total = state.cost_total + cost
 
         # 6. 记录决策（含 token 用量、模型、成本、技能文件）
         self.decision_logger.log(
@@ -93,7 +91,14 @@ class BaseStageAgent(ABC):
             cost=cost,
         )
 
-        return {"data": output, "confidence": confidence}
+        return {
+            "data": output,
+            "confidence": confidence,
+            "state_updates": {
+                "last_provider": selection.winner,
+                "cost_total": state.cost_total + cost,
+            },
+        }
 
     @abstractmethod
     def get_task_type(self) -> TaskType:

@@ -1,0 +1,10 @@
+{
+  "highlights": [
+    {"id": "mystery_hook", "name": "悬念式开场", "category": "opening", "description": "用未知引发好奇", "best_for": "神秘景点/小众目的地"},
+    {"id": "contrast_reveal", "name": "反差揭示", "category": "opening", "description": "先误导再反转", "best_for": "有惊喜感的景点"},
+    {"id": "visual_impact", "name": "视觉冲击", "category": "opening", "description": "直接展示最震撼画面", "best_for": "壮丽自然风光"},
+    {"id": "emotional_resonance", "name": "情感共鸣", "category": "opening", "description": "触动人心的画面+文案", "best_for": "人文/历史类"},
+    {"id": "time_lapse", "name": "时间流逝感", "category": "editing", "description": "展现从早到晚/四季变化", "best_for": "全景/延时摄影"},
+    {"id": "detail_closeup", "name": "细节特写", "category": "editing", "description": "从全景切到细节特写", "best_for": "工艺品/美食/建筑细节"}
+  ]
+}

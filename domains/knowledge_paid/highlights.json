@@ -1,0 +1,10 @@
+{
+  "highlights": [
+    {"id": "pain_point_hook", "name": "痛点切入", "category": "opening", "description": "直击用户痛点引发共鸣", "best_for": "解决具体问题的课程"},
+    {"id": "authority_signal", "name": "权威背书", "category": "opening", "description": "展示讲师资质/成果建立信任", "best_for": "讲师品牌类课程"},
+    {"id": "case_study", "name": "案例展示", "category": "opening", "description": "用真实案例证明效果", "best_for": "实战/方法论课程"},
+    {"id": "before_after", "name": "前后对比", "category": "editing", "description": "学习前后的变化对比", "best_for": "技能提升类课程"},
+    {"id": "step_by_step", "name": "步骤拆解", "category": "editing", "description": "复杂流程拆成清晰步骤", "best_for": "操作类/教程课程"},
+    {"id": "value_preview", "name": "价值预告", "category": "opening", "description": "预告核心干货吸引看完", "best_for": "知识密集型课程"}
+  ]
+}

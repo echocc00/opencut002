@@ -1,0 +1,42 @@
+domain: custom
+display_name: 自定义领域
+
+# 这是自定义领域的模板。复制 travel/ 目录结构后按需修改：
+# 1. 复制 domains/travel/ 到 domains/<你的领域名>/
+# 2. 修改本 style.yaml 的视觉/节奏/文案/音色/BGM 配置
+# 3. 修改 highlights.json / voices.json / research.json / opening_templates.yaml
+# 4. 在 skills/*.md 中调整各阶段的 prompt 指导
+# 5. 把 BGM 音频放入 bgm/（至少 3-5 个 mp3）
+# 6. 运行管道时 domain 参数传 <你的领域名>
+
+visual:
+  color_palette: warm
+  transition_style: smooth
+  text_animation: spring
+
+pacing:
+  default_duration: 45
+  segment_range: [3.0, 5.5]
+  opening_duration: 3.0
+  transition_duration: 0.4
+
+copywriting:
+  tone: emotional
+  sentence_length: medium
+  hook_style: suspense
+
+voice:
+  preferred_profiles: [magnetic_male, warm_male, sweet_female]
+  fallback: gentle_female
+
+bgm:
+  tempo_range: [70, 120]
+  mood: [uplifting, cinematic, ambient]
+  volume: 0.25
+
+quality_gates:
+  slideshow_risk_threshold: 70
+  opening_hard_checks:
+    - high_info_first_frame
+    - identifiable_subject
+    - subtitle_appears_early

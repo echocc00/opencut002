@@ -1,0 +1,25 @@
+templates:
+  suspense:
+    name: 悬念式
+    pattern: "前1秒：问题/悬念文字 -> 第2-3秒：画面揭晓"
+    text_template: "这个地方{percent}%的人不知道..."
+    visual_rule: "首帧为特写/局部，第2秒切全景"
+    bgm_rule: "低音渐入，第3秒鼓点"
+  contrast:
+    name: 反差式
+    pattern: "前1秒：你以为这是X -> 第2-3秒：其实它是Y"
+    text_template: "你以为这是{false_impression}，其实它是{truth}"
+    visual_rule: "首帧为误导性画面，第2秒反转"
+    bgm_rule: "第2秒卡点转折"
+  impact:
+    name: 第一视角冲击
+    pattern: "前1-3秒：无介绍，直接切最震撼画面"
+    text_template: ""
+    visual_rule: "首帧为全屏高冲击画面"
+    bgm_rule: "0秒起，强节奏"
+  emotional:
+    name: 情感共鸣
+    pattern: "前1秒：情绪画面 -> 第2-3秒：共情文案"
+    text_template: "看到{scene}的那一刻，{emotion_reaction}"
+    visual_rule: "暖色调、慢动作"
+    bgm_rule: "钢琴/弦乐渐入"

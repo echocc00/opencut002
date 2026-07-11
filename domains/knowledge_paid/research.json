@@ -1,0 +1,11 @@
+{
+  "search_queries": [
+    "{topic} 课程 热门",
+    "{topic} 学习方法 痛点",
+    "{topic} 入门到精通 教程",
+    "{topic} 行业专家 经验分享",
+    "知识付费 爆款 短视频 技巧",
+    "education short video viral {topic}"
+  ],
+  "sources": ["duckduckgo", "bing"]
+}

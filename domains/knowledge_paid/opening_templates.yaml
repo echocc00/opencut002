@@ -1,0 +1,25 @@
+templates:
+  pain_point:
+    name: 痛点式
+    pattern: "前1秒：痛点问题 -> 第2-3秒：课程解决方案"
+    text_template: "你是不是也{pain_point}？"
+    visual_rule: "首帧为痛点场景，第2秒切方案画面"
+    bgm_rule: "低音起，第3秒转明亮"
+  authority:
+    name: 权威式
+    pattern: "前1秒：资质/成果展示 -> 第2-3秒：课程价值"
+    text_template: "{credential}，教你{skill}"
+    visual_rule: "首帧为讲师/成果，第2秒切课程"
+    bgm_rule: "稳节奏，第2秒鼓点"
+  case_study:
+    name: 案例式
+    pattern: "前1-3秒：真实案例结果展示"
+    text_template: "学完之后，{outcome}"
+    visual_rule: "首帧为案例成果画面"
+    bgm_rule: "0秒起，中等节奏"
+  value_preview:
+    name: 价值预告
+    pattern: "前1秒：核心干货预告 -> 第2-3秒：课程展开"
+    text_template: "{n}分钟学会{skill}"
+    visual_rule: "首帧为干货要点，第2秒切讲解"
+    bgm_rule: "轻快节奏，吸引注意力"

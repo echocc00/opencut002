@@ -1,0 +1,10 @@
+{
+  "magnetic_male": {"name": "磁性男声", "edge_tts_voice": "zh-CN-YunxiNeural", "description": "低沉有感染力，适合悬念/情感类"},
+  "warm_male": {"name": "温暖男声", "edge_tts_voice": "zh-CN-YunyangNeural", "description": "温暖自然，适合叙事类"},
+  "sweet_female": {"name": "甜美女声", "edge_tts_voice": "zh-CN-XiaoyiNeural", "description": "甜美活泼，适合轻松/推荐类"},
+  "gentle_female": {"name": "温柔女声", "edge_tts_voice": "zh-CN-XiaochenNeural", "description": "温柔舒缓，适合治愈类"},
+  "steady_male": {"name": "沉稳男声", "edge_tts_voice": "zh-CN-YunjianNeural", "description": "沉稳有力，适合历史/文化类"},
+  "sunny_male": {"name": "阳光男声", "edge_tts_voice": "zh-CN-YunfengNeural", "description": "阳光活力，适合旅行vlog类"},
+  "dongbei_female": {"name": "东北女声", "edge_tts_voice": "zh-CN-liaoning-XiaobeiNeural", "description": "东北方言，适合接地气类"},
+  "shaanxi_female": {"name": "陕西方言女声", "edge_tts_voice": "zh-CN-shaanxi-XiaoniNeural", "description": "陕西方言，适合地域特色类"}
+}

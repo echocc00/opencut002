@@ -1,0 +1,19 @@
+templates:
+  pain_point:
+    name: 痛点切入
+    pattern: "前1秒：抛出学生最怕的问题 -> 第2-3秒：揭示答案方向"
+    text_template: "90%的学生在这个题上丢过分..."
+    visual_rule: "首帧为学生做题/考试画面"
+    bgm_rule: "紧张感低音"
+  contrast:
+    name: 前后对比
+    pattern: "前1秒：学习前状态 -> 第2-3秒：学习后变化"
+    text_template: "从XX到XX，他只用了3天..."
+    visual_rule: "首帧为对比画面"
+    bgm_rule: "第2秒转折"
+  story:
+    name: 学生故事
+    pattern: "前1-3秒：真实学生画面+叙事"
+    text_template: "这个学生之前..."
+    visual_rule: "首帧为学生特写"
+    bgm_rule: "钢琴渐入"

@@ -1,0 +1,9 @@
+{
+  "search_queries": [
+    "{destination} 教培 学习方法",
+    "{destination} 学霸 训练营",
+    "{destination} 学习痛点 易错",
+    "教培短视频 爆款 技巧"
+  ],
+  "sources": ["duckduckgo", "bing"]
+}

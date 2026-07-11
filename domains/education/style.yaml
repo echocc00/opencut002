@@ -1,0 +1,35 @@
+domain: education
+display_name: 教培短视频
+
+visual:
+  color_palette: neutral
+  transition_style: sharp
+  text_animation: slide
+  active_color: "#4A7C6F"
+
+pacing:
+  default_duration: 60
+  segment_range: [3.0, 6.0]
+  opening_duration: 3.0
+  transition_duration: 0.3
+
+copywriting:
+  tone: professional
+  sentence_length: medium
+  hook_style: contrast
+
+voice:
+  preferred_profiles: [steady_male, warm_male]
+  fallback: gentle_female
+
+bgm:
+  tempo_range: [60, 90]
+  mood: [ambient, focus]
+  volume: 0.2
+
+quality_gates:
+  slideshow_risk_threshold: 75
+  opening_hard_checks:
+    - high_info_first_frame
+    - identifiable_subject
+    - subtitle_appears_early

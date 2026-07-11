@@ -1,0 +1,35 @@
+domain: knowledge_paid
+display_name: 知识付费短视频
+
+visual:
+  color_palette: vibrant
+  transition_style: smooth
+  text_animation: spring
+  active_color: "#D4734A"
+
+pacing:
+  default_duration: 45
+  segment_range: [3.0, 5.0]
+  opening_duration: 3.0
+  transition_duration: 0.4
+
+copywriting:
+  tone: dramatic
+  sentence_length: short
+  hook_style: suspense
+
+voice:
+  preferred_profiles: [magnetic_male, sweet_female]
+  fallback: warm_male
+
+bgm:
+  tempo_range: [80, 120]
+  mood: [uplifting, cinematic]
+  volume: 0.25
+
+quality_gates:
+  slideshow_risk_threshold: 70
+  opening_hard_checks:
+    - high_info_first_frame
+    - identifiable_subject
+    - subtitle_appears_early

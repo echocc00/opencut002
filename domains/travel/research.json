@@ -1,0 +1,11 @@
+{
+  "search_queries": [
+    "{destination} 旅游攻略 热门",
+    "{destination} 打卡 网红景点",
+    "{destination} 小众旅行地",
+    "{destination} 最新活动 节日",
+    "文旅短视频 爆款 技巧",
+    "travel video viral {destination} tips"
+  ],
+  "sources": ["duckduckgo", "bing"]
+}

@@ -1,0 +1,89 @@
+control:
+  deepseek: 82
+  doubao: 75
+  minimax: 80
+  qwen: 72
+cost_efficiency:
+  deepseek: 92
+  doubao: 90
+  minimax: 88
+  qwen: 88
+latency:
+  deepseek: 78
+  doubao: 80
+  minimax: 82
+  qwen: 82
+output_quality:
+  deepseek: 85
+  doubao: 78
+  minimax: 82
+  qwen: 75
+reliability:
+  deepseek: 80
+  doubao: 85
+  minimax: 85
+  qwen: 82
+task_fit_matrix:
+  bgm_selection:
+    deepseek: 80
+    doubao: 75
+    minimax: 85
+    qwen: 72
+  copywriting:
+    deepseek: 90
+    doubao: 85
+    minimax: 85
+    qwen: 82
+  cover:
+    deepseek: 60
+    doubao: 65
+    minimax: 85
+    qwen: 70
+  fine_cut:
+    deepseek: 82
+    doubao: 70
+    minimax: 85
+    qwen: 75
+  general:
+    deepseek: 85
+    doubao: 80
+    minimax: 85
+    qwen: 78
+  image_analysis:
+    deepseek: 55
+    doubao: 60
+    minimax: 85
+    qwen: 75
+  publishing:
+    deepseek: 82
+    doubao: 85
+    minimax: 85
+    qwen: 78
+  rhythm:
+    deepseek: 85
+    doubao: 70
+    minimax: 85
+    qwen: 75
+  storyboard:
+    deepseek: 88
+    doubao: 80
+    minimax: 85
+    qwen: 78
+  topic_generation:
+    deepseek: 85
+    doubao: 90
+    minimax: 85
+    qwen: 80
+  web_research:
+    deepseek: 85
+    doubao: 78
+    minimax: 85
+    qwen: 75
+weights:
+  continuity: 0.05
+  control: 0.15
+  cost_efficiency: 0.1
+  latency: 0.05
+  output_quality: 0.2
+  reliability: 0.15
+  task_fit: 0.3

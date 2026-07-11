@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./domains:/app/domains
+    environment:
+      - OPENCUT_DATA_DIR=/app/data
+      - OPENCUT_DOMAINS_DIR=/app/domains
+    restart: unless-stopped
+
+  remotion:
+    image: node:22-slim
+    working_dir: /app/remotion
+    volumes:
+      - ./remotion:/app/remotion
+      - ./data:/app/data
+    command: >
+      sh -c "npm install && npx remotion studio --port 3000"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

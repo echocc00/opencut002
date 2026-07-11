@@ -1,0 +1,51 @@
+# ===== Secrets (NEVER commit) =====
+.env
+.env.local
+.env.*.local
+*.key
+*-key.txt
+minimax-key.txt
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+
+# ===== Node / Remotion =====
+node_modules/
+remotion/input.json
+remotion/input_*.json
+remotion_new/input.json
+remotion_new/input_*.json
+remotion/out/
+remotion/build/
+remotion/.cache/
+*.log
+npm_install.log
+npm-debug.log*
+
+# ===== Runtime data / generated outputs =====
+data/
+!data/.gitkeep
+
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ===== Claude Code session state =====
+.claude/

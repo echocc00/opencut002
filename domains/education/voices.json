@@ -1,0 +1,6 @@
+{
+  "steady_male": {"name": "沉稳男声", "edge_tts_voice": "zh-CN-YunjianNeural", "description": "沉稳有力，适合教学"},
+  "warm_male": {"name": "温暖男声", "edge_tts_voice": "zh-CN-YunyangNeural", "description": "温暖自然，适合叙事"},
+  "sweet_female": {"name": "甜美女声", "edge_tts_voice": "zh-CN-XiaoyiNeural", "description": "甜美活泼，适合年轻受众"},
+  "gentle_female": {"name": "温柔女声", "edge_tts_voice": "zh-CN-XiaochenNeural", "description": "温柔舒缓，适合知识讲解"}
+}

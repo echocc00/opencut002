@@ -1,0 +1,34 @@
+domain: travel
+display_name: 文旅短视频
+
+visual:
+  color_palette: warm
+  transition_style: smooth
+  text_animation: spring
+
+pacing:
+  default_duration: 45
+  segment_range: [3.0, 5.5]
+  opening_duration: 3.0
+  transition_duration: 0.4
+
+copywriting:
+  tone: emotional
+  sentence_length: medium
+  hook_style: suspense
+
+voice:
+  preferred_profiles: [magnetic_male, warm_male, sweet_female]
+  fallback: gentle_female
+
+bgm:
+  tempo_range: [70, 120]
+  mood: [uplifting, cinematic, ambient]
+  volume: 0.25
+
+quality_gates:
+  slideshow_risk_threshold: 70
+  opening_hard_checks:
+    - high_info_first_frame
+    - identifiable_subject
+    - subtitle_appears_early

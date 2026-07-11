@@ -1,0 +1,10 @@
+{
+  "highlights": [
+    {"id": "pain_point", "name": "痛点切入", "category": "opening", "description": "直击学生学习痛点", "best_for": "考试技巧/易错点"},
+    {"id": "contrast_before_after", "name": "前后对比", "category": "opening", "description": "展示学习前后的变化", "best_for": "学习方法/效果展示"},
+    {"id": "student_story", "name": "学生故事", "category": "content", "description": "真实学生的学习经历", "best_for": "学霸训练营/案例分享"},
+    {"id": "classroom_moment", "name": "课堂瞬间", "category": "content", "description": "真实课堂的精彩片段", "best_for": "线下课堂/互动教学"},
+    {"id": "knowledge_gap", "name": "知识缺口", "category": "content", "description": "揭示学生不知道的关键知识", "best_for": "知识付费/概念讲解"},
+    {"id": "peer_learning", "name": "同伴互助", "category": "content", "description": "学生之间互相帮助的场景", "best_for": "师友互助/小组学习"}
+  ]
+}

@@ -24,7 +24,7 @@ class RemotionRenderer:
             output_path: 输出 MP4 路径
             duration_frames: 总帧数（如不指定则根据段落时长计算）
         """
-        output_path = Path(output_path)
+        output_path = Path(output_path).resolve()
 
         # 计算总帧数
         if duration_frames is None:
@@ -34,25 +34,53 @@ class RemotionRenderer:
             title_dur = project_data.get("titleDuration", 0)
             duration_frames = int((total_duration + title_dur) * self.fps)
 
-        # 写入输入数据文件
+        # 写入输入数据文件（包 {"data": ...} 与 Root.tsx 的 props.data 结构对齐）
         import uuid
         input_file = self.remotion_dir / f"input_{uuid.uuid4().hex}.json"
         input_file.parent.mkdir(parents=True, exist_ok=True)
-        input_file.write_text(json.dumps(project_data, ensure_ascii=False), encoding="utf-8")
+        input_file.write_text(json.dumps({"data": project_data}, ensure_ascii=False), encoding="utf-8")
 
         # 构建 Remotion CLI 命令
+        # - Windows 上需解析 npx.cmd 全路径（shutil.which）
+        # - --props/--frames 用 = 语法 + 绝对路径正斜杠，规避 Windows 命令行空格/反斜杠解析
+        # - --frames 用区间 0-N（单值会被 Remotion 当作单帧出图）
+        import shutil
+        npx = shutil.which("npx")
+        if npx is None:
+            raise RuntimeError("npx 未找到，请确认 Node.js 已安装并在 PATH 中")
+        props_path = str(input_file.resolve()).replace("\\", "/")
+        out_path = str(output_path).replace("\\", "/")
         cmd = [
-            "npx", "remotion", "render",
+            npx, "remotion", "render",
             "VideoComposition",
-            str(output_path),
-            "--props", str(input_file),
-            "--codec", "h264",
-            "--fps", str(self.fps),
-            "--frames", str(duration_frames),
+            out_path,
+            f"--props={props_path}",
+            "--codec=h264",
+            f"--fps={self.fps}",
+            f"--frames=0-{duration_frames}",
         ]
 
         log.info(f"Rendering video: {output_path} ({duration_frames} frames)")
-        subprocess.run(cmd, cwd=str(self.remotion_dir), check=True, timeout=600)
+        try:
+            subprocess.run(cmd, cwd=str(self.remotion_dir), check=True, timeout=600,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        except subprocess.CalledProcessError as e:
+            input_file.unlink(missing_ok=True)
+            stderr = (e.stderr or "")[-2000:]
+            raise RuntimeError(f"Remotion 渲染失败 (exit {e.returncode}):\n{stderr}") from e
+        except Exception:
+            input_file.unlink(missing_ok=True)
+            raise
+
+        # 渲染成功：保留输入到项目目录（可复现），移动失败则清理临时文件
+        project_dir = Path(output_path).parent.parent
+        dest = project_dir / "remotion_input.json"
+        try:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            input_file.replace(dest)
+        except Exception:
+            input_file.unlink(missing_ok=True)
+
         return str(output_path)
 
     @staticmethod

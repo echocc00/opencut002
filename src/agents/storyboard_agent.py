@@ -36,4 +36,13 @@ TTS配音总时长: {tts_duration:.1f}秒
 {{"segments": [{{"index": 0, "image": "", "actual_duration": 3.5, "time_start": 0.0, "subtitle": "", "transition": "crossfade", "subtitle_words": []}}, {{"index": 1, "image": "", "actual_duration": 4.0, "time_start": 3.5, "subtitle": "", "transition": "crossfade", "subtitle_words": []}}], "total_duration": {tts_duration:.1f}}}"""
 
     def _parse_output(self, response):
-        return self._extract_json(response)
+        data = self._extract_json(response)
+        # 只保留 dict 格式的 subtitle_words 词项；AI 偶发返回字符串列表会导致
+        # 下游 opening_review 的 words[0].get(...) 崩溃。render_agent 会用 tts
+        # word_timestamps 重新填充，这里仅做防御性过滤。
+        for seg in data.get("segments", []):
+            words = seg.get("subtitle_words", [])
+            seg["subtitle_words"] = (
+                [w for w in words if isinstance(w, dict)] if isinstance(words, list) else []
+            )
+        return data

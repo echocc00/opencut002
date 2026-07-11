@@ -36,15 +36,19 @@ class RenderAgent(BaseStageAgent):
             if 0 <= cov_sel < len(candidates):
                 cover_image = candidates[cov_sel]
 
-        segments = storyboard.get("segments", []) if storyboard else []
         voice_path = tts_output.get("audio_path", "") if tts_output else ""
         bgm_path = bgm_output.get("bgm_path", "") if bgm_output else ""
         bgm_volume = bgm_output.get("volume", 0.25) if bgm_output else 0.25
+        word_timestamps = tts_output.get("word_timestamps", []) if tts_output else ""
 
-        # 断链1修复：将 tts word_timestamps 按时间段合并到 segments
-        word_timestamps = tts_output.get("word_timestamps", []) if tts_output else []
-        if word_timestamps and segments:
-            segments = self._merge_word_timestamps(segments, word_timestamps)
+        # 按文案段落构建分镜：一段一句一画面，时长=该段在音频中的真实时间
+        # 不用 storyboard AI 猜的分段（边界和句子不对齐 -> 句子被切到两个画面、最后一句丢失）
+        cw_output = state.get_stage_output("copywriting")
+        im_output = state.get_stage_output("image_matching")
+        paragraphs = cw_output.get("paragraphs", []) if cw_output else []
+        matches = im_output.get("matches", {}) if im_output else {}
+        sb_segments = storyboard.get("segments", []) if storyboard else []
+        segments = self._build_paragraph_segments(paragraphs, word_timestamps, matches, sb_segments)
 
         # 从领域配置读取style并注入
         from ..config import get_domain_config, get_settings
@@ -130,12 +134,11 @@ class RenderAgent(BaseStageAgent):
         }
 
     def _merge_word_timestamps(self, segments: list[dict], word_timestamps: list[dict]) -> list[dict]:
-        """将全局 word_timestamps 按时间段分配到各 segment"""
+        """将全局 word_timestamps 按时间段分配到各 segment（旧逻辑，保留兼容）"""
         merged = []
         for seg in segments:
             seg_start = seg.get("time_start", 0.0)
             seg_end = seg_start + seg.get("actual_duration", 3.0)
-            # 找出属于这个 segment 的词
             seg_words = [
                 {"word": w["word"], "start": w["start"] - seg_start, "end": w["end"] - seg_start}
                 for w in word_timestamps
@@ -145,6 +148,81 @@ class RenderAgent(BaseStageAgent):
             merged_seg["subtitle_words"] = seg_words
             merged.append(merged_seg)
         return merged
+
+    def _build_paragraph_segments(self, paragraphs: list[dict], word_timestamps: list[dict],
+                                  matches: dict, sb_segments: list[dict]) -> list[dict]:
+        """按文案段落构建分镜：一段一画面，时长=该段在音频中的真实时间范围。
+
+        一段文案 = 一个画面 = 一句字幕，这句读完才切下一个画面。
+        时长来自该段词级时间戳的真实起止，而非 AI 猜测。
+        """
+        if not paragraphs:
+            return []
+        para_ranges = self._map_words_to_paragraphs(paragraphs, word_timestamps)
+        segments = []
+        time_start = 0.0
+        for i, para in enumerate(paragraphs):
+            p_start, p_end, p_words = para_ranges[i] if i < len(para_ranges) else (0.0, 0.0, [])
+            dur = (p_end - p_start) if p_end > p_start else max(2.0, len(para.get("text", "")) * 0.3)
+            dur = max(0.5, dur)
+            transition = "crossfade"
+            if i < len(sb_segments) and sb_segments[i].get("transition"):
+                transition = sb_segments[i]["transition"]
+            seg = {
+                "index": i,
+                "image": matches.get(str(i), ""),
+                "actual_duration": round(dur, 3),
+                "time_start": round(time_start, 3),
+                "subtitle": para.get("text", ""),
+                "transition": transition,
+                "subtitle_words": [
+                    {"word": w.get("word", ""),
+                     "start": round(w.get("start", 0) - p_start, 3),
+                     "end": round(w.get("end", 0) - p_start, 3)}
+                    for w in p_words
+                ],
+            }
+            segments.append(seg)
+            time_start += dur
+        return segments
+
+    def _map_words_to_paragraphs(self, paragraphs: list[dict], word_timestamps: list[dict]):
+        """把全局 word_timestamps 按字符位置切分到各段落。
+
+        fallback 转录器按字符生成 word（一个字一个 word），顺序与拼接文本一致 -> 按段落字符数精确切分。
+        若数量不匹配（如 WhisperX 词级），按文本长度比例分配，最后一段取剩余全部。
+        """
+        if not word_timestamps:
+            return [(0.0, 0.0, []) for _ in paragraphs]
+        para_texts = [p.get("text", "").replace(" ", "").replace("\n", "") for p in paragraphs]
+        full_no_space = "".join(para_texts)
+        ranges = []
+        if len(word_timestamps) == len(full_no_space):
+            # 精确匹配（fallback 字符级）
+            idx = 0
+            for pt in para_texts:
+                n = len(pt)
+                pw = word_timestamps[idx:idx + n]
+                start = pw[0].get("start", 0.0) if pw else 0.0
+                end = pw[-1].get("end", start) if pw else start
+                ranges.append((start, end, pw))
+                idx += n
+            return ranges
+        # 比例分配（词级 / 数量不匹配），最后一段取剩余
+        total_chars = len(full_no_space) or 1
+        total_words = len(word_timestamps)
+        idx = 0
+        for i, pt in enumerate(para_texts):
+            if i == len(para_texts) - 1:
+                pw = word_timestamps[idx:]  # 最后一段取全部剩余
+            else:
+                n_words = max(0, round(len(pt) / total_chars * total_words))
+                pw = word_timestamps[idx:idx + n_words]
+                idx += n_words
+            start = pw[0].get("start", 0.0) if pw else 0.0
+            end = pw[-1].get("end", start) if pw else start
+            ranges.append((start, end, pw))
+        return ranges
 
     def _build_prompt(self, *a): return ""
     def _parse_output(self, r): return {}

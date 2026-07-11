@@ -24,17 +24,18 @@ from src.providers.selector import ProviderSelector
 from src.config import DomainConfig
 
 
-async def main(full: bool = False):
+async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/materials",
+               project_id: str = "edu_test", domain: str = "education"):
     if not auto_register_from_env():
         print("❌ 未配置 Provider：请设置 MINIMAX_API_KEY 环境变量（或保留 ../minimax-key.txt）")
         sys.exit(1)
     print("✅ Provider OK")
 
-    mat_dir = Path("data/projects/edu_test/materials")
+    mat_dir = Path(materials_dir)
     if not mat_dir.exists():
         print(f"❌ 素材目录不存在: {mat_dir}（需放入 .jpg 素材）")
         sys.exit(1)
-    materials = [{"file": str(f), "filename": f.name} for f in sorted(mat_dir.glob("*.jpg"))][:5]
+    materials = [{"file": str(f.resolve()), "filename": f.name} for f in sorted(mat_dir.glob("*.jpg"))][:5]
     print(f"✅ {len(materials)}张素材")
 
     data_dir = Path("data")
@@ -65,10 +66,22 @@ async def main(full: bool = False):
         mode = "smoke（12 阶段，跳过 tts/render）"
 
     print(f"模式: {mode}")
-    config = DomainConfig(Path("domains/education"))
-    eng.auto_register_handlers(SkillLoader(config), ProviderSelector(), DecisionLogger(data_dir, "edu_test"))
+    config = DomainConfig(Path(f"domains/{domain}"))
+    eng.auto_register_handlers(SkillLoader(config), ProviderSelector(), DecisionLogger(data_dir, project_id))
 
-    state = ProjectState(project_id="edu_test", domain="education", approval_mode="full_auto", materials=materials)
+    from src.orchestrator.state import StageStatus
+    state = ProjectState.load(data_dir, project_id)
+    if state is None:
+        state = ProjectState(project_id=project_id, domain=domain, approval_mode="full_auto", materials=materials)
+    else:
+        done = sum(1 for s in state.stages.values() if s.status == StageStatus.COMPLETED)
+        print(f"📂 恢复已有状态（{done} 阶段已完成），重试未完成阶段")
+        # 重置 pending/error 阶段的 retry_count，给重试机会
+        for st in state.stages.values():
+            if st.status in (StageStatus.PENDING, StageStatus.ERROR):
+                st.status = StageStatus.PENDING
+                st.retry_count = 0
+                st.error = None
     state.get_stage("material_analysis").input_data = {"materials": materials}
 
     # web_search mock（避免网络抖动，--full 也不验证搜索能力）
@@ -102,5 +115,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="OpenCut v3 管道运行入口")
     parser.add_argument("--full", action="store_true",
                         help="跑完整 20 阶段管道（含 tts/render，需 minimax key + ffmpeg + node）")
+    parser.add_argument("--materials-dir", default="data/projects/edu_test/materials",
+                        help="素材目录（.jpg 文件）")
+    parser.add_argument("--project-id", default="edu_test", help="项目 ID（输出到 data/projects/{id}/）")
+    parser.add_argument("--domain", default="education", help="领域（travel/education/knowledge_paid/custom）")
     args = parser.parse_args()
-    asyncio.run(main(full=args.full))
+    asyncio.run(main(full=args.full, materials_dir=args.materials_dir,
+                     project_id=args.project_id, domain=args.domain))

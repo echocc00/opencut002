@@ -65,8 +65,12 @@ class BaseStageAgent(ABC):
         # 4. 调用 AI（返回 ProviderResponse，含 token 用量）
         response = await self._call_ai(selection.winner, prompt)
 
-        # 5. 解析输出
+        # 5. 解析输出（AI 偶发返回空/不可解析，重试一次）
         output = self._parse_output(response.text)
+        if not output:
+            log.warning(f"Stage {stage.name}: AI 返回空输出，重试一次")
+            response = await self._call_ai(selection.winner, prompt)
+            output = self._parse_output(response.text)
 
         # #10: 统一用 confidence_scorer 计算置信度
         required_keys = get_required_keys(stage.name)
@@ -124,7 +128,12 @@ class BaseStageAgent(ABC):
     async def _call_ai(self, provider_name: str, prompt: str):
         from ..providers.provider_registry import get_provider
         provider = get_provider(provider_name)
-        return await provider.complete(prompt)
+        try:
+            return await provider.complete(prompt)
+        except Exception as e:
+            # minimax 等 API 偶发报错（限流/网络抖动），重试一次
+            log.warning(f"AI 调用失败 ({provider_name})，重试一次: {e}")
+            return await provider.complete(prompt)
 
     def _extract_json(self, text: str) -> dict:
         match = re.search(r"\{[\s\S]*\}", text)

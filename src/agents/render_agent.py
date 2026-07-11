@@ -56,6 +56,33 @@ class RenderAgent(BaseStageAgent):
         except Exception:
             active_color = "#D4734A"
 
+        # 把素材（图片/音频）复制到 remotion/public/{project_id}/ 并改写为 public 相对路径
+        # Remotion headless 浏览器禁止 file:// 资源，只能走 staticFile（public/ 下）
+        import shutil
+        from pathlib import Path as _Path
+        public_dir = _Path(get_settings().remotion_dir) / "public" / state.project_id
+        public_dir.mkdir(parents=True, exist_ok=True)
+
+        def _stage_asset(asset_path: str) -> str:
+            if not asset_path:
+                return ""
+            src = _Path(asset_path)
+            if not src.is_absolute():
+                src = _Path.cwd() / src
+            if not src.exists():
+                return asset_path
+            dest = public_dir / src.name
+            if not dest.exists():
+                shutil.copy2(src, dest)
+            return f"{state.project_id}/{src.name}"
+
+        for seg in segments:
+            if seg.get("image"):
+                seg["image"] = _stage_asset(seg["image"])
+        cover_image = _stage_asset(cover_image)
+        voice_path = _stage_asset(voice_path)
+        bgm_path = _stage_asset(bgm_path)
+
         render_data = RemotionRenderer.build_render_data(
             title=title, title_duration=2.0,
             segments=segments, voice_path=voice_path,

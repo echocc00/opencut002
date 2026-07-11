@@ -16,4 +16,14 @@ class CoverAgent(BaseStageAgent):
 {{"cover_candidates": ["frame_0.jpg", "frame_3.jpg"], "selected": -1}}"""
 
     def _parse_output(self, response):
-        return self._extract_json(response)
+        data = self._extract_json(response)
+        # cover_candidates 可能是对象列表（AI 返回 {file, reason}），归一化为字符串列表
+        cands = data.get("cover_candidates", [])
+        normalized: list[str] = []
+        for c in cands:
+            if isinstance(c, str):
+                normalized.append(c)
+            elif isinstance(c, dict):
+                normalized.append(c.get("file") or c.get("frame_id") or c.get("path") or "")
+        data["cover_candidates"] = [c for c in normalized if c]
+        return data

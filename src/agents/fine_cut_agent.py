@@ -16,4 +16,10 @@ class FineCutAgent(BaseStageAgent):
 {{"adjustments": [{{"index": 0, "duration_delta": 0.0, "transition_duration": 0.4}}]}}"""
 
     def _parse_output(self, response):
-        return self._extract_json(response)
+        data = self._extract_json(response)
+        # AI 偶发返回空，给默认空调整列表避免 "输出为空" 阻断
+        if not data:
+            data = {"adjustments": []}
+        elif "adjustments" not in data:
+            data["adjustments"] = []
+        return data

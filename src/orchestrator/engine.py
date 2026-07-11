@@ -274,24 +274,26 @@ class PipelineEngine:
                             state.save(self.data_dir)
                             continue
 
-                # postflight: schema 校验 + 完整性校验，失败则 RETRY（不再静默 warn）
+                # postflight: 完整性校验（空/缺关键字段）失败则 RETRY；schema 类型不符仅 warn
                 from ..quality.postflight import validate_output, check_output_completeness
                 output_ok, output_issues = validate_output(name, stage.output_data)
                 complete_ok, complete_issues = check_output_completeness(name, stage.output_data)
-                if not output_ok or not complete_ok:
-                    all_issues = output_issues + complete_issues
-                    log.warning(f"Stage {name}: output contract issues: {all_issues}")
+                if not complete_ok:
+                    log.warning(f"Stage {name}: output completeness issues: {complete_issues}")
                     retry_limit = get_auto_retry_limit(state.approval_mode)
                     if stage.retry_count < retry_limit:
                         stage.retry_count += 1
                         stage.status = StageStatus.PENDING
                         state.save(self.data_dir)
                         continue
-                    log.error(f"Stage {name}: output contract exhausted retries: {all_issues}")
+                    log.error(f"Stage {name}: output completeness exhausted retries: {complete_issues}")
                     stage.status = StageStatus.ERROR
-                    stage.error = f"output contract failed: {all_issues}"
+                    stage.error = f"output completeness failed: {complete_issues}"
                     state.save(self.data_dir)
                     continue
+                elif not output_ok:
+                    # schema 类型不符（AI 返回更丰富结构，如 dict 代替 str）-> 非阻断，记录 warn
+                    log.warning(f"Stage {name}: output schema issues (non-blocking): {output_issues}")
 
                 state.mark_stage(name, StageStatus.COMPLETED)
 

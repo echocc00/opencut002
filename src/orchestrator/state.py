@@ -30,6 +30,10 @@ class StageState(BaseModel):
     confidence_score: Optional[float] = None
     retry_count: int = 0
 
+    def with_update(self, **kwargs) -> "StageState":
+        """不可变更新：返回新 StageState（遵循 immutability 原则）"""
+        return self.model_copy(update=kwargs)
+
 
 class ProjectState(BaseModel):
     """项目全局状态"""
@@ -59,6 +63,17 @@ class ProjectState(BaseModel):
             stage.started_at = datetime.now()
         if status == StageStatus.COMPLETED:
             stage.completed_at = datetime.now()
+
+    def with_update(self, **kwargs) -> "ProjectState":
+        """不可变更新：返回新 ProjectState（遵循 immutability 原则）"""
+        return self.model_copy(update=kwargs)
+
+    def with_stage_update(self, name: str, **kwargs) -> "ProjectState":
+        """不可变更新某个 stage，返回新 ProjectState（stages dict 也复制）"""
+        stage = self.get_stage(name)
+        new_stage = stage.with_update(**kwargs)
+        new_stages = {**self.stages, name: new_stage}
+        return self.model_copy(update={"stages": new_stages})
 
     def is_stage_completed(self, name: str) -> bool:
         stage = self.stages.get(name)

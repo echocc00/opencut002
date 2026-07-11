@@ -288,8 +288,7 @@ class PipelineEngine:
                     state.save(self.data_dir)
                     continue
 
-                stage.status = StageStatus.COMPLETED
-                stage.completed_at = datetime.now()
+                state.mark_stage(name, StageStatus.COMPLETED)
 
                 # 发射事件
                 if self.event_store:
@@ -315,8 +314,7 @@ class PipelineEngine:
             return state
 
         if approved:
-            stage.status = StageStatus.COMPLETED
-            stage.completed_at = datetime.now()
+            state.mark_stage(stage_name, StageStatus.COMPLETED)
             if feedback:
                 state.user_notes[stage_name] = feedback
             # 记录用户决策到偏好画像

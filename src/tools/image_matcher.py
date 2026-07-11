@@ -1,6 +1,25 @@
 """图片匹配工具 - AI语义匹配 + 4层回退"""
 from __future__ import annotations
+import json
+import re
 from typing import Any
+
+
+def build_matching_prompt(paragraphs: list[dict], available_images: list[dict]) -> str:
+    """构建图片匹配 prompt（段落 -> 图片的语义匹配）"""
+    para_summary = [
+        {"i": i, "text": p.get("text", ""), "hint": p.get("image_hint", "")}
+        for i, p in enumerate(paragraphs)
+    ]
+    img_summary = [
+        {"i": i, "scene": img.get("scene", ""), "file": img.get("file", "")}
+        for i, img in enumerate(available_images)
+    ]
+    return f"""将文案段落与图片匹配。
+段落: {json.dumps(para_summary, ensure_ascii=False)}
+图片: {json.dumps(img_summary, ensure_ascii=False)}
+输出JSON: {{"matches": [{{"paragraph": 0, "image": "filename.jpg"}}]}}"""
+
 
 async def match_images(paragraphs: list[dict], available_images: list[dict],
                        ai_complete=None) -> dict[str, str]:
@@ -9,14 +28,9 @@ async def match_images(paragraphs: list[dict], available_images: list[dict],
 
     # 优先尝试AI匹配
     if ai_complete:
-        import json
-        prompt = f"""将文案段落与图片匹配。
-段落: {json.dumps([{{"i": i, "text": p.get("text",""), "hint": p.get("image_hint","")}} for i,p in enumerate(paragraphs)], ensure_ascii=False)}
-图片: {json.dumps([{{"i": i, "scene": img.get("scene",""), "file": img.get("file","")}} for i,img in enumerate(available_images)], ensure_ascii=False)}
-输出JSON: {{"matches": [{{"paragraph": 0, "image": "filename.jpg"}}]}}"""
+        prompt = build_matching_prompt(paragraphs, available_images)
         try:
             resp = await ai_complete(prompt)
-            import re
             m = re.search(r'\{[\s\S]*\}', resp)
             if m:
                 data = json.loads(m.group())

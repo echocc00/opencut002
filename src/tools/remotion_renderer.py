@@ -64,23 +64,14 @@ class RemotionRenderer:
         bgm_path: str = "",
         bgm_volume: float = 0.25,
         style: dict[str, str] | None = None,
+        cover_image: str = "",
+        domain: str = "education",
     ) -> dict[str, Any]:
         """构建 Remotion 渲染数据
 
         重要：此方法是 Python(snake_case) -> TypeScript(camelCase) 的转换边界。
         所有字段名在此处转为 camelCase，input.json 中只出现 camelCase。
         详见 docs/data-flow-contract.md 的"Python -> Remotion 跨语言数据契约"。
-        """
-        """构建 Remotion 渲染数据
-
-        Args:
-            title: 视频标题
-            title_duration: 标题显示时长（秒）
-            segments: 分镜段落列表
-            voice_path: 配音音频路径
-            bgm_path: BGM 音频路径
-            bgm_volume: BGM 音量
-            style: 样式配置
         """
         default_style = {
             "activeColor": "#D4734A",
@@ -95,8 +86,6 @@ class RemotionRenderer:
         for seg in segments:
             cs = {}
             for k, v in seg.items():
-                camel_key = k.replace("_", "_")  # 默认保持
-                # 特殊字段转换
                 if k == "actual_duration": camel_key = "actualDuration"
                 elif k == "time_start": camel_key = "timeStart"
                 elif k == "subtitle_words": camel_key = "subtitleWords"
@@ -113,4 +102,6 @@ class RemotionRenderer:
             "bgmPath": bgm_path,
             "bgmVolume": bgm_volume,
             "style": default_style,
+            "coverImage": cover_image,
+            "domain": domain,
         }

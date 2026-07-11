@@ -21,12 +21,20 @@ class RenderAgent(BaseStageAgent):
         tts_output = state.get_stage_output("tts")
         bgm_output = state.get_stage_output("bgm")
         title_output = state.get_stage_output("title")
+        cover_output = state.get_stage_output("cover")
 
         title = ""
         if title_output and title_output.get("titles"):
             sel = title_output.get("selected", 0)
             if 0 <= sel < len(title_output["titles"]):
                 title = title_output["titles"][sel]
+
+        cover_image = ""
+        if cover_output:
+            candidates = cover_output.get("cover_candidates", [])
+            cov_sel = cover_output.get("selected", -1)
+            if 0 <= cov_sel < len(candidates):
+                cover_image = candidates[cov_sel]
 
         segments = storyboard.get("segments", []) if storyboard else []
         voice_path = tts_output.get("audio_path", "") if tts_output else ""
@@ -39,7 +47,7 @@ class RenderAgent(BaseStageAgent):
             segments = self._merge_word_timestamps(segments, word_timestamps)
 
         # 从领域配置读取style并注入
-        from ..config import get_domain_config
+        from ..config import get_domain_config, get_settings
         try:
             domain_cfg = get_domain_config(state.domain)
             style = domain_cfg.get_style()
@@ -53,10 +61,14 @@ class RenderAgent(BaseStageAgent):
             segments=segments, voice_path=voice_path,
             bgm_path=bgm_path, bgm_volume=bgm_volume,
             style={"activeColor": active_color},
+            cover_image=cover_image, domain=state.domain,
         )
 
         output_path = f"data/projects/{state.project_id}/output/final.mp4"
-        renderer = RemotionRenderer()
+        renderer = RemotionRenderer(
+            remotion_dir=get_settings().remotion_dir,
+            fps=get_settings().remotion_fps,
+        )
 
         try:
             renderer.render(render_data, output_path)

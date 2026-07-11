@@ -4,7 +4,7 @@
  * 设计：
  * - 背景层：当前图片放大铺满全屏 + 重度模糊 + 暗化遮罩
  * - 前景层：图片卡片（圆角+阴影）居中显示
- * - 字幕层：逐词高亮字幕
+ * - 字幕层：逐词高亮字幕（words 为空时降级整段 subtitle）
  */
 import { AbsoluteFill, Img, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 import { WordByWordSubtitle } from "../components/WordByWordSubtitle";
@@ -14,12 +14,13 @@ import { resolveAsset } from "../utils/resolveAsset";
 
 export const SegmentScene: React.FC<{
   image: string;
+  subtitle?: string;
   subtitleWords: { word: string; start: number; end: number }[];
   transition: string;
   theme: ThemeConfig;
   segmentIndex: number;
   segmentDuration: number;
-}> = ({ image, subtitleWords, transition, theme, segmentIndex, segmentDuration }) => {
+}> = ({ image, subtitle, subtitleWords, transition, theme, segmentIndex, segmentDuration }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -91,6 +92,7 @@ export const SegmentScene: React.FC<{
       {/* 字幕层 */}
       <WordByWordSubtitle
         words={subtitleWords || []}
+        fallbackText={subtitle}
         style={{
           activeColor: theme.captionHighlightColor,
           pastColor: theme.captionPastColor,

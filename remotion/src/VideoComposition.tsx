@@ -50,6 +50,7 @@ export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
           <Sequence key={i} from={startFrame} durationInFrames={durationFrames}>
             <SegmentScene
               image={seg.image}
+              subtitle={seg.subtitle}
               subtitleWords={seg.subtitleWords || []}
               transition={seg.transition}
               theme={theme}

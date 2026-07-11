@@ -26,10 +26,11 @@ class RemotionRenderer:
         """
         output_path = Path(output_path).resolve()
 
-        # 计算总帧数
+        # 计算总帧数（render_data 已是 camelCase，读 actualDuration）
         if duration_frames is None:
             total_duration = sum(
-                seg.get("actual_duration", 3.0) for seg in project_data.get("segments", [])
+                seg.get("actualDuration", seg.get("actual_duration", 3.0))
+                for seg in project_data.get("segments", [])
             )
             title_dur = project_data.get("titleDuration", 0)
             duration_frames = int((total_duration + title_dur) * self.fps)
@@ -57,7 +58,8 @@ class RemotionRenderer:
             f"--props={props_path}",
             "--codec=h264",
             f"--fps={self.fps}",
-            f"--frames=0-{duration_frames}",
+            # 不传 --frames：让 Remotion 用 Root.tsx calculateMetadata 算的 durationInFrames 渲染全片
+            # （含 cover），避免 render 端 duration 与 composition 端不一致的 off-by-one
         ]
 
         log.info(f"Rendering video: {output_path} ({duration_frames} frames)")

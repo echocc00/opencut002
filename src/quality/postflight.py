@@ -47,6 +47,18 @@ def check_output_completeness(stage_name: str, output: dict[str, Any]) -> tuple[
         segments = output.get("segments", [])
         if not segments:
             issues.append("分镜段落数据为空")
+        else:
+            # time_start 必须为累积绝对时间：seg[i].time_start == sum(seg[:i].actual_duration)
+            cumulative = 0.0
+            for i, seg in enumerate(segments):
+                t = seg.get("time_start", 0.0)
+                if i == 0 and abs(t) > 0.5:
+                    issues.append(f"段落 0 的 time_start 应为 0.0（实际 {t}），需为累积绝对时间")
+                elif i > 0 and abs(t - cumulative) > 0.5:
+                    issues.append(
+                        f"段落 {i} 的 time_start 非累积绝对时间：期望 {cumulative:.2f}（前序 actual_duration 之和），实际 {t}"
+                    )
+                cumulative += seg.get("actual_duration", 0.0)
     elif stage_name == "topic":
         directions = output.get("directions", [])
         if not directions:

@@ -59,6 +59,29 @@ def test_postflight_completeness_empty_storyboard():
     assert "分镜段落数据为空" in issues
 
 
+def test_postflight_completeness_storyboard_cumulative_pass():
+    """time_start 为累积绝对时间 -> 通过"""
+    output = {"segments": [
+        {"image": "a.jpg", "actual_duration": 3.5, "time_start": 0.0},
+        {"image": "b.jpg", "actual_duration": 4.0, "time_start": 3.5},
+        {"image": "c.jpg", "actual_duration": 3.0, "time_start": 7.5},
+    ]}
+    ok, issues = check_output_completeness("storyboard", output)
+    assert ok, f"expected pass but got issues: {issues}"
+
+
+def test_postflight_completeness_storyboard_time_start_not_cumulative():
+    """time_start 非累积（第 2 段应为 3.5 却为 0）-> 不通过"""
+    output = {"segments": [
+        {"image": "a.jpg", "actual_duration": 3.5, "time_start": 0.0},
+        {"image": "b.jpg", "actual_duration": 4.0, "time_start": 0.0},
+        {"image": "c.jpg", "actual_duration": 3.0, "time_start": 3.5},
+    ]}
+    ok, issues = check_output_completeness("storyboard", output)
+    assert not ok
+    assert any("time_start" in i and "累积" in i for i in issues)
+
+
 # ========== 幻灯片风险评分 ==========
 
 def test_slideshow_low_risk():

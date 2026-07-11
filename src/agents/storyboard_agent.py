@@ -24,8 +24,16 @@ TTS配音总时长: {tts_duration:.1f}秒
 【上游数据】
 {upstream_context}
 
-生成分镜。每段包含图片、时长、字幕、转场。输出JSON：
-{{"segments": [{{"index": 0, "image": "", "actual_duration": 3.5, "time_start": 0.0, "subtitle": "", "transition": "crossfade", "subtitle_words": []}}], "total_duration": {tts_duration:.1f}}}"""
+生成分镜。每段包含图片、时长、字幕、转场。
+
+【重要约束 - time_start 必须为累积绝对时间】
+- 第 0 段 time_start = 0.0
+- 第 i 段 time_start = 前面所有段的 actual_duration 之和
+- 各段首尾相接，(time_start + actual_duration) 单调递增
+- 示例：3 段时长 3.5/4.0/3.0 -> time_start 依次为 0.0 / 3.5 / 7.5
+
+输出JSON：
+{{"segments": [{{"index": 0, "image": "", "actual_duration": 3.5, "time_start": 0.0, "subtitle": "", "transition": "crossfade", "subtitle_words": []}}, {{"index": 1, "image": "", "actual_duration": 4.0, "time_start": 3.5, "subtitle": "", "transition": "crossfade", "subtitle_words": []}}], "total_duration": {tts_duration:.1f}}}"""
 
     def _parse_output(self, response):
         return self._extract_json(response)

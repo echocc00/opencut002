@@ -51,13 +51,14 @@
   Remotion 通过相对路径访问 public。**不要在渲染数据里塞绝对路径**。
 - **相关**：`remotion/public/` 下会累积项目素材，可定期清理。
 
-### 3. TTS 用 minimax async（t2a_async_v2）
+### 3. TTS 用 minimax 同步 t2a_v2
 
 - **现象**：视频无声，或 TTS 阶段 error。
-- **根因**：早期用 edge-tts（不可靠）和同步 t2a_v2（需 GroupId）。现用
-  `t2a_async_v2`：创建任务 -> 轮询 `/v1/files/retrieve` -> 下载 tar -> 解 mp3。
-- **解法**：确认 `MINIMAX_API_KEY` 有效。模型 `speech-2.8-hd`，voice_setting
-  用 `audiobook_male_1` / `audiobook_female_1`。
+- **根因**：曾用 `t2a_async_v2` + `/v1/files/retrieve` 轮询，retrieve 在部分账号要
+  GroupId、Bearer 返回 2013 "file not found"，90s 超时（延长 240s 也无效）。
+- **解法**：改用同步 `/v1/t2a_v2`，响应 `data.audio` 是 hex-encoded MP3，Bearer 鉴权
+  直接拿完整音频，无轮询。模型 `speech-2.8-hd`，voice_setting 用
+  `audiobook_male_1` / `audiobook_female_1`，emotion 支持 happy/sad/angry/fearful/surprised/neutral。
 - **相关**：`src/tools/tts_generator.py`、`src/agents/tts_agent.py`。
 - **段落级 TTS**：每段文案单独合成，ffprobe 探精确时长，ffmpeg concat 拼接。
   TTS 是时间源，不做转写对齐（成熟做法）。
@@ -109,6 +110,15 @@
 - 渲染数据路径用相对项目根的相对路径，不用绝对路径。
 - `copywriting.paragraphs` 是下游（image_matching / tts / storyboard）的共同源，
   改它要同步下游消费。
+
+### 9. AI 输出包 xxx_plan 命名空间
+
+- **现象**：fine_cut 报"上游 rhythm 缺少 segment_timings"，或类似 stage 缺顶层字段。
+- **根因**：AI 偶发把整个输出包在 `rhythm_plan` / `storyboard_plan` 等字段里，
+  下游 preflight 找不到顶层字段而 ERROR。
+- **解法**：`base_agent._flatten_plan_namespace` 自动展平 `xxx_plan` -> 顶层，
+  所有走基类 execute 的 stage 自动受益。
+- **相关**：`src/agents/base_agent.py`。
 
 ## 音色复刻（voice cloning）
 

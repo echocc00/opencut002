@@ -112,7 +112,8 @@ data/       项目状态与产物（data/projects/<id>/）
    `render_agent` 自动把素材拷到 `remotion/public/<project_id>/` 解决。
    不要在渲染数据里塞绝对路径，用相对项目根的路径。
 
-3. **TTS 用 minimax async**：`t2a_async_v2`（非 edge-tts，非同步 t2a_v2）。
+3. **TTS 用 minimax 同步 t2a_v2**：响应 `data.audio` 是 hex MP3，Bearer 鉴权，无轮询
+   （曾用 t2a_async_v2 + retrieve 轮询，retrieve 在部分账号要 GroupId、Bearer 返回 2013 超时）。
    逐段合成 → ffprobe 探时长 → ffmpeg concat 拼接。TTS 是时间源，不做转写对齐。
 
 4. **素材分析必须用多模态视觉**：文本 LLM 看不见图，会幻觉（把教室说成雪山）。
@@ -128,6 +129,10 @@ data/       项目状态与产物（data/projects/<id>/）
 
 7. **doubao 模型 ID**：用 `doubao-seed-2-0-lite-260428`，不是显示名
    `Doubao-Seed-2.0-lite`（会 404）。
+
+8. **AI 输出包 xxx_plan 命名空间**：AI 偶发把整个输出包在 `rhythm_plan` / `storyboard_plan`
+   等字段里，导致下游 preflight 找不到 `segment_timings` 等顶层字段而 ERROR。
+   `base_agent._flatten_plan_namespace` 自动展平 `xxx_plan` -> 顶层，无需各 stage 单独处理。
 
 ## Agent 操作守则
 

@@ -71,6 +71,8 @@ class BaseStageAgent(ABC):
             log.warning(f"Stage {stage.name}: AI 返回空输出，重试一次")
             response = await self._call_ai(selection.winner, prompt)
             output = self._parse_output(response.text)
+        # 展平 AI 习惯性包在 xxx_plan 字段里的命名空间（如 rhythm_plan）
+        output = self._flatten_plan_namespace(output)
 
         # #10: 统一用 confidence_scorer 计算置信度
         required_keys = get_required_keys(stage.name)
@@ -143,3 +145,17 @@ class BaseStageAgent(ABC):
             except json.JSONDecodeError:
                 pass
         return {}
+
+    def _flatten_plan_namespace(self, data: dict) -> dict:
+        """展平 AI 习惯性包在 xxx_plan 字段里的命名空间（如 rhythm_plan -> 顶层）。
+
+        AI 偶发把整个输出包在 rhythm_plan / storyboard_plan 等字段里，
+        导致下游 preflight 找不到 segment_timings 等顶层字段而 ERROR。
+        """
+        if not isinstance(data, dict):
+            return data
+        for key in list(data.keys()):
+            if key.endswith("_plan") and isinstance(data[key], dict):
+                for k, v in data[key].items():
+                    data.setdefault(k, v)
+        return data

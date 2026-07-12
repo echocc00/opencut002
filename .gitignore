@@ -48,4 +48,12 @@ Thumbs.db
 *.swo
 
 # ===== Claude Code session state =====
-.claude/
+.claude/*
+!.claude/skills/
+
+# ===== Build artifacts =====
+opencut-v3-*-bundle.zip
+
+# ===== Remotion staged assets (runtime) =====
+remotion/public/*
+!remotion/public/.gitkeep

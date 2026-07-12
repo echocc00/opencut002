@@ -20,20 +20,26 @@ DEFAULT_MINIMAX_VOICE = "audiobook_male_1"
 
 
 async def generate_tts_minimax(text: str, voice_id: str, output_path: Path,
-                               api_key: str = "", api_base: str = "https://api.minimaxi.com") -> str:
+                               emotion: str = "", api_key: str = "",
+                               api_base: str = "https://api.minimaxi.com") -> str:
     """MiniMax 异步 TTS (t2a_async_v2)：create -> poll retrieve -> download tar -> extract mp3。
 
     不需要 GroupId（异步端点用 Bearer token 鉴权）。
+    emotion: minimax 语气取值（happy/sad/angry/fearful/disgusted/surprised/neutral），
+             空字符串则不传（用 minimax 默认）。
     """
     import asyncio, httpx, tarfile, io
     api_key = api_key or os.environ.get("MINIMAX_API_KEY", "")
     if not api_key:
         raise RuntimeError("无 MINIMAX_API_KEY")
 
+    voice_setting: dict = {"voice_id": voice_id, "speed": 1, "vol": 1, "pitch": 1}
+    if emotion:
+        voice_setting["emotion"] = emotion
     body = {
         "model": "speech-2.8-hd",
         "text": text,
-        "voice_setting": {"voice_id": voice_id, "speed": 1, "vol": 1, "pitch": 1},
+        "voice_setting": voice_setting,
         "audio_setting": {"audio_sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 2},
         "language_boost": "auto",
     }
@@ -70,14 +76,15 @@ async def generate_tts_minimax(text: str, voice_id: str, output_path: Path,
 
 
 async def generate_tts(text: str, voice: str, output_path: str | Path,
-                       engine: str = "minimax") -> str:
-    """生成TTS音频。engine: minimax（默认，异步 t2a_async_v2）或 edge-tts"""
+                       engine: str = "minimax", emotion: str = "") -> str:
+    """生成TTS音频。engine: minimax（默认，异步 t2a_async_v2）或 edge-tts。
+    emotion: minimax 语气取值（仅 minimax 引擎生效）。"""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if engine == "minimax":
         voice_id = EDGE_TO_MINIMAX_VOICE.get(voice, DEFAULT_MINIMAX_VOICE)
-        return await generate_tts_minimax(text, voice_id, output_path)
+        return await generate_tts_minimax(text, voice_id, output_path, emotion=emotion)
 
     if engine == "edge-tts":
         import edge_tts

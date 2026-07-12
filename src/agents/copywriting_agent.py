@@ -22,8 +22,9 @@ class CopywritingAgent(BaseStageAgent):
 
 {f'【用户备注】{user_note}' if user_note else ''}
 
-生成4-8段文案。输出JSON：
-{{"paragraphs": [{{"text": "", "target_duration": 3.5, "image_hint": "", "highlight_ref": "", "emotion_tone": ""}}], "tone": ""}}"""
+生成4-8段文案。每段 emotion_tone 从以下配音语气取值选一个：happy/sad/angry/fearful/surprised/neutral（用于 TTS 语气，如焦虑用 fearful、好奇用 surprised、平静用 neutral）。
+输出JSON：
+{{"paragraphs": [{{"text": "", "target_duration": 3.5, "image_hint": "", "highlight_ref": "", "emotion_tone": "neutral"}}], "tone": ""}}"""
 
     def _parse_output(self, response):
         return self._extract_json(response)

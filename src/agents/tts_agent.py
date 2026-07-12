@@ -44,6 +44,57 @@ def _concat_audio(seg_paths: list[str], output: str) -> None:
     os.remove(list_file)
 
 
+# 文案 emotion_tone 描述 -> minimax TTS emotion 取值
+# minimax 支持: happy/sad/angry/fearful/disgusted/surprised/neutral
+EMOTION_TONE_TO_MINIMAX = {
+    # happy
+    "激情": "happy", "激动": "happy", "兴奋": "happy", "开心": "happy",
+    "快乐": "happy", "喜悦": "happy", "欢快": "happy", "热情": "happy",
+    "活力": "happy", "向往": "happy", "期待": "happy", "积极": "happy",
+    # sad
+    "悲伤": "sad", "伤感": "sad", "哀伤": "sad", "忧愁": "sad", "失落": "sad",
+    "难过": "sad", "遗憾": "sad",
+    # angry
+    "愤怒": "angry", "气愤": "angry", "生气": "angry", "愤慨": "angry", "不满": "angry",
+    # fearful
+    "恐惧": "fearful", "害怕": "fearful", "紧张": "fearful", "担忧": "fearful",
+    "焦虑": "fearful", "紧迫": "fearful", "急迫": "fearful", "不安": "fearful",
+    # surprised
+    "惊讶": "surprised", "惊奇": "surprised", "震惊": "surprised", "意外": "surprised",
+    "惊喜": "surprised", "好奇": "surprised", "悬念": "surprised",
+    # disgusted
+    "厌恶": "disgusted", "反感": "disgusted",
+    # neutral
+    "平静": "neutral", "沉稳": "neutral", "中性": "neutral", "客观": "neutral",
+    "温柔": "neutral", "温暖": "neutral", "亲切": "neutral", "自然": "neutral",
+    "沉浸": "neutral", "专注": "neutral", "信任": "neutral", "真实": "neutral",
+    "共鸣": "neutral", "引导": "neutral", "叙事": "neutral", "专业": "neutral",
+    # 英文取值直通
+    "happy": "happy", "sad": "sad", "angry": "angry", "fearful": "fearful",
+    "disgusted": "disgusted", "surprised": "surprised", "neutral": "neutral",
+}
+
+
+def _map_emotion(tone: str) -> str:
+    """文案 emotion_tone -> minimax emotion 取值，未命中返回空（用 minimax 默认）。
+
+    支持复合描述（如"焦虑、共鸣"）：按分隔符拆分，取第一个匹配的词。
+    """
+    if not tone:
+        return ""
+    import re
+    t = tone.strip()
+    # 整体直通
+    if t.lower() in EMOTION_TONE_TO_MINIMAX:
+        return EMOTION_TONE_TO_MINIMAX[t.lower()]
+    # 复合描述：按分隔符拆分，取第一个匹配
+    for part in re.split(r"[、,，/；;\s]+", t):
+        p = part.strip().lower()
+        if p in EMOTION_TONE_TO_MINIMAX:
+            return EMOTION_TONE_TO_MINIMAX[p]
+    return ""
+
+
 class TTSAgent(BaseStageAgent):
     def get_task_type(self) -> TaskType:
         return TaskType.GENERAL
@@ -84,9 +135,10 @@ class TTSAgent(BaseStageAgent):
             text = p.get("text", "")
             if not text:
                 continue
+            emotion = _map_emotion(p.get("emotion_tone", ""))
             seg_path = f"{audio_dir}/voice_{i}.mp3"
             try:
-                await generate_tts(text, voice_key, seg_path)
+                await generate_tts(text, voice_key, seg_path, emotion=emotion)
             except Exception as e:
                 log.error(f"TTS 段 {i} 失败: {e}")
                 return {"data": {"audio_path": "", "error": str(e),

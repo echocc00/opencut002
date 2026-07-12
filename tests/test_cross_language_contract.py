@@ -55,12 +55,12 @@ class TestFieldNameContract:
             assert pattern not in content, \
                 f"VideoComposition.tsx 包含 snake_case 访问: {pattern}"
 
-    def test_word_subtitle_expects_word_start_end(self):
-        """WordByWordSubtitle 组件期望 word/start/end 字段"""
+    def test_word_subtitle_renders_text(self):
+        """WordByWordSubtitle 组件接收 text 整段显示（不逐词高亮）"""
         content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text(encoding="utf-8")
-        assert "w.start" in content, "缺少 w.start 访问"
-        assert "w.end" in content, "缺少 w.end 访问"
-        assert "w.word" in content, "缺少 w.word 访问"
+        assert "text" in content, "应有 text prop"
+        # 不再逐词：不应有 w.start / w.word 访问
+        assert "w.start" not in content and "w.word" not in content, "不应逐词访问"
 
 
 class TestPathFormat:
@@ -82,21 +82,11 @@ class TestPathFormat:
 class TestRemotionConstraints:
     """Remotion API 约束测试"""
 
-    def test_no_color_interpolate(self):
-        """WordByWordSubtitle 不应用 interpolate 处理颜色"""
+    def test_subtitle_uses_spring_fadein(self):
+        """字幕用 spring 做整段淡入（opacity），不逐词 interpolate 颜色"""
         content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text(encoding="utf-8")
-        # 检查 interpolate 不用于颜色
-        # 颜色应该直接设置或用 CSS transition
-        assert "transition" in content, "颜色过渡应使用 CSS transition"
-
-    def test_interpolate_range_safe(self):
-        """interpolate 的输入范围应处理短词边缘 case"""
-        content = Path("remotion/src/components/WordByWordSubtitle.tsx").read_text(encoding="utf-8")
-        # 应该有 wordDur 检查
-        assert "wordDur" in content, "应检查 wordDur 处理短词"
-        # 应该有 min/clamp 逻辑
-        assert "min(" in content or "Math.min" in content or "Math.max" in content, \
-            "应使用 min/max 确保插值范围递增"
+        assert "spring" in content, "应用 spring 动画"
+        assert "opacity" in content, "应淡入（opacity）"
 
 
 class TestEnvironmentConstraints:

@@ -78,15 +78,12 @@ def test_remotion_components_exist():
 
 
 def test_word_by_word_subtitle_component_structure():
-    """逐词高亮字幕组件包含关键逻辑"""
+    """字幕组件整段淡入结构（text prop + spring opacity）"""
     path = Path(__file__).parent.parent / "remotion" / "src" / "components" / "WordByWordSubtitle.tsx"
     content = path.read_text(encoding="utf-8")
-    # 检查关键功能
-    assert "isActive" in content  # 当前激活词检测
-    assert "isPast" in content  # 已播放词检测
-    assert "activeColor" in content  # 激活颜色
-    assert "scale" in content  # 放大动画
-    assert "interpolate" in content  # 插值动画
+    assert "text" in content  # text prop（整段文本）
+    assert "spring" in content  # spring 入场动画
+    assert "opacity" in content  # 淡入
 
 
 def test_title_scene_has_spring_animation():

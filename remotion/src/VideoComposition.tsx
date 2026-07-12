@@ -51,7 +51,6 @@ export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
             <SegmentScene
               image={seg.image}
               subtitle={seg.subtitle}
-              subtitleWords={seg.subtitleWords || []}
               transition={seg.transition}
               theme={theme}
               segmentIndex={i}

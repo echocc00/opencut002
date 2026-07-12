@@ -154,30 +154,21 @@ class RenderAgent(BaseStageAgent):
         """按 TTS 段落时间戳构建分镜：一段一画面，时长=该段 TTS 精确时长。
 
         段落时长来自每段单独 TTS 的 ffprobe 测量（精确），不依赖转录反推。
-        字符在该段时长内均匀分布用于逐词高亮（节奏均匀但限定在正确句子内）。
+        字幕整段淡入显示（不再逐词高亮），故不生成 subtitle_words。
         """
         segments = []
         for pt in paragraph_timing:
             i = pt["index"]
-            text = pt["text"]
-            dur = pt["duration"]
-            chars = list(text.replace(" ", "").replace("\n", ""))
-            char_dur = dur / len(chars) if chars else 0
             transition = "crossfade"
             if i < len(sb_segments) and sb_segments[i].get("transition"):
                 transition = sb_segments[i]["transition"]
             segments.append({
                 "index": i,
                 "image": matches.get(str(i), ""),
-                "actual_duration": round(dur, 3),
+                "actual_duration": round(pt["duration"], 3),
                 "time_start": round(pt["start"], 3),
-                "subtitle": text,
+                "subtitle": pt["text"],
                 "transition": transition,
-                "subtitle_words": [
-                    {"word": c, "start": round(j * char_dur, 3),
-                     "end": round((j + 1) * char_dur, 3)}
-                    for j, c in enumerate(chars)
-                ],
             })
         return segments
 

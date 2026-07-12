@@ -110,6 +110,24 @@
 - `copywriting.paragraphs` 是下游（image_matching / tts / storyboard）的共同源，
   改它要同步下游消费。
 
+## 音色复刻（voice cloning）
+
+minimax 支持上传参考音频克隆自定义音色，TTS 用克隆 voice_id 合成。
+
+### 流程
+
+1. 准备参考音频（mp3/wav，10-30s 清晰人声）
+2. `python scripts/clone_voice.py --audio <参考音频> --voice-id <自定义ID>`
+   - 内部：`/v1/files/upload` 上传得 file_id -> `/v1/voice_clone` 传 voice_id + file_id
+3. 配 `domains/<domain>/voices.json`：`{"my_voice": {"minimax_voice_id": "<自定义ID>", ...}}`
+4. 管道 voice_selection 选该音色 -> tts_agent 优先读 `minimax_voice_id` -> generate_tts 直传
+
+### 注意
+
+- 克隆 voice_id 不在 `EDGE_TO_MINIMAX_VOICE` 映射，`generate_tts` 直传（fallback 用 voice 本身）
+- 克隆音色仍支持 emotion 语气
+- voice cloning 是一次性操作，voice_id 注册后长期可用
+
 ## 决策日志
 
 `data/projects/<id>/decisions.jsonl` 记录每阶段的 AI 决策（prompt 摘要、输出、

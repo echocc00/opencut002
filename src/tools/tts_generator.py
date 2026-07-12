@@ -83,7 +83,8 @@ async def generate_tts(text: str, voice: str, output_path: str | Path,
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if engine == "minimax":
-        voice_id = EDGE_TO_MINIMAX_VOICE.get(voice, DEFAULT_MINIMAX_VOICE)
+        # edge voice 映射到 minimax voice_id；未映射的（如克隆 voice_id）直传
+        voice_id = EDGE_TO_MINIMAX_VOICE.get(voice, voice)
         return await generate_tts_minimax(text, voice_id, output_path, emotion=emotion)
 
     if engine == "edge-tts":
@@ -93,3 +94,42 @@ async def generate_tts(text: str, voice: str, output_path: str | Path,
         return str(output_path)
 
     raise ValueError(f"不支持的TTS引擎: {engine}")
+
+
+async def clone_voice_minimax(audio_path: Path, voice_id: str,
+                              api_key: str = "",
+                              api_base: str = "https://api.minimaxi.com") -> dict:
+    """上传参考音频克隆音色。voice_id 是自定义音色 ID，TTS 时用此 ID 合成。
+
+    流程：1) /v1/files/upload 上传音频得 file_id  2) /v1/voice_clone 传 voice_id + file_id。
+    克隆完成后，generate_tts_minimax 直接用该 voice_id 合成。
+    """
+    import httpx
+    api_key = api_key or os.environ.get("MINIMAX_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("无 MINIMAX_API_KEY")
+
+    async with httpx.AsyncClient(timeout=120) as client:
+        with open(audio_path, "rb") as f:
+            files = {"file": (audio_path.name, f, "audio/mpeg")}
+            data = {"purpose": "voice_clone"}
+            r = await client.post(f"{api_base}/v1/files/upload",
+                                  headers={"Authorization": f"Bearer {api_key}"},
+                                  files=files, data=data)
+        if r.status_code != 200:
+            raise RuntimeError(f"克隆上传失败 {r.status_code}: {r.text[:200]}")
+        file_id = r.json().get("file", {}).get("file_id")
+        if not file_id:
+            raise RuntimeError(f"克隆上传无 file_id: {r.text[:200]}")
+
+        r2 = await client.post(
+            f"{api_base}/v1/voice_clone",
+            headers={"Authorization": f"Bearer {api_key}",
+                     "Content-Type": "application/json"},
+            json={"voice_id": voice_id, "file_id": file_id},
+        )
+        ok = r2.status_code == 200 and r2.json().get("base_resp", {}).get("status_code") == 0
+        if not ok:
+            raise RuntimeError(f"克隆失败 {r2.status_code}: {r2.text[:200]}")
+
+    return {"success": True, "voice_id": voice_id, "file_id": file_id}

@@ -120,7 +120,9 @@ class TTSAgent(BaseStageAgent):
                     domain = get_domain_config(state.domain)
                     voices = domain.get_voices()
                     if selected in voices:
-                        voice_key = voices[selected].get("edge_tts_voice", voice_key)
+                        v = voices[selected]
+                        # 优先 minimax_voice_id（克隆音色直传），否则 edge_tts_voice 映射
+                        voice_key = v.get("minimax_voice_id") or v.get("edge_tts_voice", voice_key)
                 except Exception:
                     pass
 

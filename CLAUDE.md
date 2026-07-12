@@ -94,6 +94,15 @@ data/       项目状态与产物（data/projects/<id>/）
 新增领域：复制 `domains/custom` 或 `domains/travel`，改配置 + 换 BGM。详见
 [domains/custom/README.md](domains/custom/README.md)。
 
+## 自定义音色（音色复刻，可选）
+
+用 minimax voice cloning 克隆自定义音色：
+
+1. 准备参考音频（mp3/wav，10-30s 清晰人声）
+2. 克隆：`python scripts/clone_voice.py --audio <参考音频> --voice-id <自定义ID>`
+3. 配到 `domains/<domain>/voices.json`：`{"my_voice": {"name": "我的克隆音色", "minimax_voice_id": "<自定义ID>", "description": "..."}}`
+4. 管道 voice_selection 可选该音色，TTS 用克隆音色（支持 emotion 语气）
+
 ## 已知坑（务必遵守）
 
 1. **Windows 编码**：控制台默认 GBK，中文/emoji 会 `UnicodeEncodeError`。

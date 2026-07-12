@@ -27,9 +27,6 @@ export const WordByWordSubtitle: React.FC<{
       <div style={{
         opacity: enterProgress,
         transform: `translateY(${(1 - enterProgress) * 15}px)`,
-        backgroundColor: "rgba(0,0,0,0.7)",
-        borderRadius: 10,
-        padding: "10px 24px",
         maxWidth: "92%",
         textAlign: "center",
       }}>
@@ -40,6 +37,7 @@ export const WordByWordSubtitle: React.FC<{
           fontFamily: "Noto Sans SC, sans-serif",
           whiteSpace: "pre-wrap",
           lineHeight: 1.5,
+          textShadow: "0 2px 8px rgba(0,0,0,0.8)",
         }}>
           {text}
         </span>

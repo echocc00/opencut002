@@ -34,11 +34,12 @@ class MaterialAnalysisAgent(BaseStageAgent):
                 basic_analyses.append({"file": fpath, "size": size, "basic_score": score})
         stage.input_data["basic_analyses"] = basic_analyses
 
-        # 选多模态 provider（优先 doubao，它能看图）
+        # 选多模态 provider（优先 minimax M3，次选 doubao，都能看图）
         candidates = list_providers()
         if not candidates:
             raise RuntimeError("无可用 Provider，请配置环境变量")
-        provider_name = "doubao" if "doubao" in candidates else candidates[0]
+        provider_name = "minimax" if "minimax" in candidates else (
+            "doubao" if "doubao" in candidates else candidates[0])
         provider = get_provider(provider_name)
 
         image_paths = [m["file"] for m in materials if m.get("file") and os.path.exists(m["file"])]

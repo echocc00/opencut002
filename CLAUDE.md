@@ -62,7 +62,7 @@ cp .env.example .env   # 然后填真实 key
 | `MINIMAX_API_KEY` | **必填**。同时用于 LLM（默认 provider）和 TTS |
 | `MINIMAX_API_BASE` | `https://api.minimaxi.com/anthropic` |
 | `MINIMAX_MODEL` | `MiniMax M3` |
-| `DOUBAO_API_KEY` | **强烈必填**。素材分析靠多模态视觉，缺它则文案与画面对不上 |
+| `DOUBAO_API_KEY` | 可选 fallback。minimax M3 已支持多模态视觉（优先用），doubao 作备用 |
 | `DOUBAO_API_BASE` | `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_MODEL` | `doubao-seed-2-0-lite-260428`（多模态，注意是模型 ID 不是显示名） |
 | `PEXELS_API_KEY` | 可选，补充素材 |
@@ -106,8 +106,8 @@ data/       项目状态与产物（data/projects/<id>/）
 3. **TTS 用 minimax async**：`t2a_async_v2`（非 edge-tts，非同步 t2a_v2）。
    逐段合成 → ffprobe 探时长 → ffmpeg concat 拼接。TTS 是时间源，不做转写对齐。
 
-4. **素材分析必须用 doubao 视觉**：文本 LLM 看不见图，会幻觉（把教室说成雪山）。
-   `material_analysis_agent` 已用 doubao 多模态，不要回退到纯文本 provider。
+4. **素材分析必须用多模态视觉**：文本 LLM 看不见图，会幻觉（把教室说成雪山）。
+   `material_analysis_agent` 优先 minimax M3 多模态，doubao 次之，不要回退到纯文本 provider。
 
 5. **素材必须是 .jpg**：`run_full.py` 只 glob `*.jpg`（取前 5 张）。
    源是视频时先 ffmpeg 抽帧：`ffmpeg -i src.mp4 -vf fps=1/5 frame_%02d.jpg`

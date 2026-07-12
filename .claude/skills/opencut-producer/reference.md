@@ -62,14 +62,14 @@
 - **段落级 TTS**：每段文案单独合成，ffprobe 探精确时长，ffmpeg concat 拼接。
   TTS 是时间源，不做转写对齐（成熟做法）。
 
-### 4. 素材分析必须用 doubao 视觉
+### 4. 素材分析必须用多模态视觉
 
 - **现象**：素材描述与图无关（教室说成雪山）。
 - **根因**：文本 LLM 看不见图，靠文件名猜。
-- **解法**：`material_analysis_agent` 用 doubao 多模态（base64 image_url）。
-  确认 `.env` 配了 `DOUBAO_API_KEY` 且 `DOUBAO_MODEL=doubao-seed-2-0-lite-260428`。
+- **解法**：`material_analysis_agent` 优先 minimax M3 多模态（Anthropic image block），
+  doubao 次之（OpenAI image_url）。二选一，确认对应 key 已配。
 - **相关**：`src/agents/material_analysis_agent.py`、
-  `src/providers/provider_registry.py` 的 `make_openai_provider`（处理 images kwarg）。
+  `src/providers/provider_registry.py`（minimax + openai provider 都处理 images kwarg）。
 
 ### 5. doubao 模型 ID 不是显示名
 

@@ -30,17 +30,40 @@ class Provider:
         raise NotImplementedError(f"Provider {self.name} has no complete function")
 
 
+def _guess_media_type(path: str) -> str:
+    ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+    return {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+            "gif": "image/gif", "webp": "image/webp"}.get(ext, "image/jpeg")
+
+
 def make_minimax_provider(api_key: str, api_base: str = "https://api.minimaxi.com/anthropic",
                           model: str = "MiniMax M3"):
-    """创建 MiniMax Provider (Anthropic兼容API)"""
+    """创建 MiniMax Provider (Anthropic兼容API，M3 支持多模态 image block)"""
     async def complete_fn(prompt: str, **kw) -> str:
+        import base64
         max_tokens = kw.get("max_tokens", 8192)
+        images = kw.get("images")  # 多模态：图片路径列表
+        if images:
+            content: list = [{"type": "text", "text": prompt}]
+            for img_path in images:
+                try:
+                    with open(img_path, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode()
+                    content.append({"type": "image", "source": {
+                        "type": "base64",
+                        "media_type": _guess_media_type(img_path),
+                        "data": b64,
+                    }})
+                except Exception:
+                    pass  # 跳过无法读取的图片
+            messages = [{"role": "user", "content": content}]
+        else:
+            messages = [{"role": "user", "content": prompt}]
         async with httpx.AsyncClient(timeout=120) as client:
             resp = await client.post(
                 f"{api_base}/v1/messages",
                 headers={"Content-Type": "application/json", "x-api-key": api_key},
-                json={"model": model, "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
+                json={"model": model, "max_tokens": max_tokens, "messages": messages},
             )
         if resp.status_code != 200:
             raise RuntimeError(f"MiniMax API错误 {resp.status_code}: {resp.text[:200]}")

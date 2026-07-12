@@ -48,8 +48,8 @@ bash scripts/bootstrap.sh
 #    若某依赖缺失，bootstrap 会报 [X] 并退出，按提示装好再重跑
 
 # 3. 配 .env：编辑 .env 填两个 key
-#    MINIMAX_API_KEY=...   (LLM + TTS，必填)
-#    DOUBAO_API_KEY=...    (多模态视觉，必填，否则文案对不上画面)
+#    MINIMAX_API_KEY=...   (LLM + TTS + 多模态视觉，必填)
+#    DOUBAO_API_KEY=...    (多模态视觉 fallback，可选；minimax M3 已能看图)
 #    DOUBAO_MODEL 保持 doubao-seed-2-0-lite-260428
 
 # 4. 冒烟测试（12 阶段，验证 provider key 有效，不需素材）
@@ -76,8 +76,7 @@ ls remotion/node_modules      # 必须存在（否则 cd remotion && npm install
 ls .env                       # 必须存在且含真实 MINIMAX_API_KEY / DOUBAO_API_KEY
 ```
 
-`.env` 缺 key 则让用户补（参考 `.env.example`）。**doubao key 缺失会导致文案与
-画面不符**，必须配。
+`.env` 缺 key 则让用户补（参考 `.env.example`）。**素材分析需多模态：minimax M3 已支持（优先），doubao 作 fallback，至少配一个**。
 
 ## 第 2 步：准备素材（.jpg）
 
@@ -158,7 +157,7 @@ python -c "import json; s=json.load(open('data/projects/$PROJECT_ID/state.json',
 | 渲染阶段 npx 找不到 | `cd remotion && npm install` |
 | 渲染报 file:// 错误 | 不应出现（render_agent 自动 stage 到 public/）；若出现，看 `render_agent.py` |
 | 视频没声音 | TTS 失败。看 state.json 的 `tts.error`，确认 `MINIMAX_API_KEY` 有效 |
-| 文案描述与画面不符 | doubao 未生效。确认 `.env` 的 `DOUBAO_MODEL=doubao-seed-2-0-lite-260428`（不是显示名） |
+| 文案描述与画面不符 | 多模态未生效。material_analysis 优先 minimax M3，确认 `MINIMAX_API_KEY` 有效；doubao 作 fallback |
 | 最后一句没画面/字幕 | copywriting 段落被拆碎；检查 state.json 的 `copywriting.paragraphs` 是完整句子 |
 | 某阶段一直 error | 看 `data/projects/$PROJECT_ID/decisions.jsonl` 决策日志 + state.json 的 error 字段 |
 

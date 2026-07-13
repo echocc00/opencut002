@@ -90,7 +90,7 @@ data/       项目状态与产物（data/projects/<id>/）
 本分支 `main` = **CLI/agent 版**（精简，agent 调 `scripts/run_full.py` 本地出片，无 web/DB/auth）。
 SaaS/私有化方向在 `saas` 分支（含 `web/` + `src/db/` + auth/jobs/key 池）。
 
-- **共同需求**（新领域、管道修复、TTS/渲染改进等）：提到 `main` -> `git merge main` 进 `saas`，两方向都拿到。
+- **共同需求**（新领域、管道修复、TTS/渲染改进等）：提到 `main` -> 在 `saas` 上 `git cherry-pick <commit>`（**不要 `git merge main`**：main 的 split commit 会删 SaaS 文件 + 还原共享文件，破坏 saas）。两方向都拿到。
 - **SaaS 专属**（web/auth/计费/任务层/key 托管）：只提 `saas`，不进 `main`。
 - **拉取**：`git clone -b main <repo>`（CLI 版）或 `git clone -b saas <repo>`（SaaS 版）。
 - **永远不把 `saas` 合回 `main`**（会把 SaaS 文件带进精简版）。

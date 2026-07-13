@@ -72,35 +72,29 @@ cp .env.example .env   # 然后填真实 key
 ## 架构（六层）
 
 ```
-api/        HTTP 入口（FastAPI）：auth / projects / jobs / admin / panel
-db/         SQLAlchemy 模型 + 引擎（User/ApiKey/Project/Job，SQLite+WAL）
+api/        HTTP 入口（FastAPI，projects/panel）
 orchestrator/  管道引擎 + 状态 + 审批 + 质量关卡
 agents/     20 个阶段 Agent（每个阶段一个）
 tools/      领域无关工具（TTS / Remotion 渲染 / 图像匹配 / 素材准备）
 providers/  多 LLM provider 适配（minimax / doubao / deepseek / qwen）
-config.py   领域配置加载 + Settings（含 SaaS 字段）
-web/        Next.js 前端（v0.4.0，登录/上传/进度/下载）
-data/       项目状态与产物（data/projects/<id>/）+ opencut.db
+config.py   领域配置加载（domains/<domain>/）
+data/       项目状态与产物（data/projects/<id>/）
 ```
 
 跨语言数据契约（Python → Remotion）见 [docs/data-flow-contract.md](docs/data-flow-contract.md)。
 **改任何渲染数据字段前必读此文档**：Python 侧 snake_case，Remotion 侧 camelCase，
 转换在 `RemotionRenderer.build_render_data()`。
 
-## SaaS 层（v0.4.0）
+## 分支策略（双方向维护）
 
-CLI（`scripts/run_full.py`）和 Web（`web/` + `src/api/`）两种入口共用同一管道。
+本分支 `main` = **CLI/agent 版**（精简，agent 调 `scripts/run_full.py` 本地出片，无 web/DB/auth）。
+SaaS/私有化方向在 `saas` 分支（含 `web/` + `src/db/` + auth/jobs/key 池）。
 
-**Web 运行**：
-```bash
-uvicorn src.api.app:app --reload --port 8000   # 后端
-cd web && npm install && npm run dev            # 前端 http://localhost:3000
-```
-
-- **鉴权**：JWT（`src/api/auth.py`），`/api/auth/register|login|me`。受保护端点 `Depends(get_current_user)`，admin 端点 `Depends(get_admin_user)`。
-- **任务**：`POST /api/projects/{id}/run` 或 `POST /api/jobs?project_id=X` 启动。`JobRunner`（`src/api/job_runner.py`）在线程池跑 `PipelineEngine`（阻塞 subprocess 不卡 event loop），用 sync session 写 Job 状态（SQLite WAL 允许 async 读 + sync 写并发）。MVP 无 Celery，进程重启丢运行中任务。
-- **API Key 托管**：管理员 `POST /api/admin/keys` 录 key 到 DB，`auto_register_all`（`provider_registry.py`）env 优先 + DB 补齐。用户不接触 `.env`。
-- **MVP 边界**：SQLite（非 Postgres）、线程池（非 Celery/Redis）、密码+JWT（非 OAuth）、无计费（v0.5.0）、无 alembic。生产需补这些 + 反向代理 HTTPS。
+- **共同需求**（新领域、管道修复、TTS/渲染改进等）：提到 `main` -> `git merge main` 进 `saas`，两方向都拿到。
+- **SaaS 专属**（web/auth/计费/任务层/key 托管）：只提 `saas`，不进 `main`。
+- **拉取**：`git clone -b main <repo>`（CLI 版）或 `git clone -b saas <repo>`（SaaS 版）。
+- **永远不把 `saas` 合回 `main`**（会把 SaaS 文件带进精简版）。
+- **版本**：CLI 版 tag `v0.x.0-cli`，SaaS 版 tag `v0.x.0-saas`（在 saas 分支）。共同改动两版一起升。
 
 ## 领域
 

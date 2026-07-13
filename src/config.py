@@ -23,11 +23,6 @@ class Settings(BaseSettings):
     whisper_compute_type: str = "int8"
     remotion_fps: int = 30
     default_llm_provider: str = "deepseek"
-    # SaaS 层（v0.4.0）
-    database_url: str = "sqlite+aiosqlite:///./data/opencut.db"
-    jwt_secret: str = "dev-secret-change-in-production-min32bytes!"
-    jwt_algorithm: str = "HS256"
-    jwt_expire_hours: int = 24
 
 
 _settings: Settings | None = None

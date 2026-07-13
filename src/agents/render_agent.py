@@ -82,10 +82,13 @@ class RenderAgent(BaseStageAgent):
                 src = _Path.cwd() / src
             if not src.exists():
                 return asset_path
-            dest = public_dir / src.name
+            # 人脸遮盖（opt-in，OPENCUT_FACE_MASK=1）：图片用 masked 副本，非图片返回原图
+            from ..tools.face_masker import get_masked_path
+            staged = _Path(get_masked_path(str(src)))
+            dest = public_dir / staged.name
             if not dest.exists():
-                shutil.copy2(src, dest)
-            return f"{state.project_id}/{src.name}"
+                shutil.copy2(staged, dest)
+            return f"{state.project_id}/{staged.name}"
 
         # 校验 segment/cover images 是真实文件；storyboard AI 可能编造文件名，不存在则用素材兜底
         material_files = [m.get("file", "") for m in state.materials if m.get("file")]

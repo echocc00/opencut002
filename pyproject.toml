@@ -19,6 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "pytest-cov>=5.0"]
 gpu = ["whisperx>=3.1"]
+face = ["opencv-python>=4.8", "Pillow>=10.0"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -106,7 +106,7 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
 
 本分支 `saas` = **SaaS/私有化版**（含 web/db/auth/jobs/key 托管）。CLI/agent 方向在 `main` 分支（精简，无 SaaS）。
 
-- **共同需求**（新领域、管道修复、TTS/渲染改进等）：先在 `main` 提，再 `git merge main` 进 `saas`。
+- **共同需求**（新领域、管道修复、TTS/渲染改进等）：先在 `main` 提，再在 `saas` 上 `git cherry-pick <commit>`（**不要 `git merge main`**：main 的 split commit 会删 SaaS 文件 + 还原共享文件，破坏 saas）。
 - **SaaS 专属**（web/auth/计费/任务层/key 托管）：只提 `saas`，不进 `main`。
 - **拉取**：`git clone -b saas`（本版）或 `git clone -b main`（CLI 版）。
 - **永远不把 `saas` 合回 `main`**（会把 SaaS 文件带进精简版）。

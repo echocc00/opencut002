@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 import os
 os.chdir(ROOT)
 
-VERSION = "3.0.0"
+VERSION = "0.3.0"
 if tomllib:
     try:
         with open("pyproject.toml", "rb") as f:

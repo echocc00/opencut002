@@ -1,6 +1,7 @@
 """渲染 Agent - 调用Remotion渲染+FFmpeg编码"""
 from __future__ import annotations
 import logging
+import os
 from typing import Any
 from ..orchestrator.state import ProjectState, StageState
 from ..providers.selector import TaskType
@@ -9,6 +10,12 @@ from ..quality.post_render_validator import validate_video, format_report
 from .base_agent import BaseStageAgent
 
 log = logging.getLogger(__name__)
+
+
+def _ai_label_enabled() -> bool:
+    """读 OPENCUT_AI_LABEL 环境变量决定是否渲染 AI 生成标识（默认关）。
+    合规储备：B2C 公网上线时设 OPENCUT_AI_LABEL=1 即可开启，无需改代码。"""
+    return os.environ.get("OPENCUT_AI_LABEL", "").strip().lower() in ("1", "true", "yes", "on")
 
 
 class RenderAgent(BaseStageAgent):
@@ -102,6 +109,7 @@ class RenderAgent(BaseStageAgent):
             bgm_path=bgm_path, bgm_volume=bgm_volume,
             style={"activeColor": active_color},
             cover_image=cover_image, domain=state.domain,
+            ai_label=_ai_label_enabled(),
         )
 
         output_path = f"data/projects/{state.project_id}/output/final.mp4"

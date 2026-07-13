@@ -26,8 +26,17 @@ WEIGHTS = {
 THRESHOLDS = {"low": 0, "medium": 40, "high": 70, "critical": 85}
 
 
-def score_storyboard(segments: list[dict[str, Any]], topic_data: dict[str, Any] | None = None) -> RiskScore:
-    """对分镜数据进行幻灯片风险评估"""
+def score_storyboard(
+    segments: list[dict[str, Any]],
+    topic_data: dict[str, Any] | None = None,
+    thresholds: dict[str, float] | None = None,
+) -> RiskScore:
+    """对分镜数据进行幻灯片风险评估。
+
+    thresholds: 可选，覆盖默认 THRESHOLDS（如 {"high": 80, "critical": 90} 放宽阻断）。
+                由 engine 从 domain style.yaml 的 quality_gates.slideshow_thresholds 注入，
+                让运营不改代码即可调松/调紧质量关卡。
+    """
     score = RiskScore()
     if not segments:
         score.total_score = 100.0
@@ -35,6 +44,8 @@ def score_storyboard(segments: list[dict[str, Any]], topic_data: dict[str, Any] 
         score.passed = False
         score.issues.append("无分镜数据")
         return score
+
+    thr = {**THRESHOLDS, **(thresholds or {})}
 
     # 1. 重复度 (25%)
     score.dimensions["repetition"] = _score_repetition(segments)
@@ -56,13 +67,13 @@ def score_storyboard(segments: list[dict[str, Any]], topic_data: dict[str, Any] 
 
     score.total_score = sum(score.dimensions[d] * w for d, w in WEIGHTS.items())
 
-    if score.total_score >= THRESHOLDS["critical"]:
+    if score.total_score >= thr["critical"]:
         score.risk_level = "critical"
         score.passed = False
-    elif score.total_score >= THRESHOLDS["high"]:
+    elif score.total_score >= thr["high"]:
         score.risk_level = "high"
         score.passed = False
-    elif score.total_score >= THRESHOLDS["medium"]:
+    elif score.total_score >= thr["medium"]:
         score.risk_level = "medium"
     else:
         score.risk_level = "low"

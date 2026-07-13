@@ -51,6 +51,7 @@
 | bgm_volume | bgmVolume | build_render_data 参数 |
 | title_duration | titleDuration | build_render_data 参数 |
 | cover_image | coverImage | render_data 构建时设置 |
+| ai_label | aiLabel | build_render_data 参数（bool，默认 false，由 OPENCUT_AI_LABEL 环境变量控制） |
 
 ### subtitleWords 子字段
 

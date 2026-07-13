@@ -1,0 +1,39 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0f1115;
+  color: #e6e6e6;
+  min-height: 100vh;
+}
+a { color: #6ab0ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, select {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #2a2e36;
+  background: #1a1d24;
+  color: #e6e6e6;
+}
+button { cursor: pointer; background: #2d6cdf; border-color: #2d6cdf; color: #fff; }
+button:hover { background: #2660c0; }
+button:disabled { background: #444; border-color: #444; cursor: not-allowed; }
+input:focus, select:focus { outline: none; border-color: #2d6cdf; }
+.card {
+  max-width: 480px;
+  margin: 60px auto;
+  background: #1a1d24;
+  border: 1px solid #2a2e36;
+  border-radius: 12px;
+  padding: 28px;
+}
+.container { max-width: 960px; margin: 0 auto; padding: 28px; }
+.row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+.row > * { flex: 1; }
+.error { color: #ff6b6b; margin: 10px 0; font-size: 14px; }
+.stage { padding: 6px 10px; margin: 4px 0; border-radius: 6px; background: #1a1d24; font-size: 14px; }
+.stage.done { color: #6ec07e; }
+.stage.active { color: #ffd166; font-weight: 600; }
+.stage.pending { color: #888; }
+.nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; border-bottom: 1px solid #2a2e36; }

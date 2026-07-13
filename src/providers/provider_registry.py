@@ -181,3 +181,43 @@ def auto_register_from_env() -> list[str]:
 def list_providers() -> list[str]:
     """返回已注册的 provider 名列表"""
     return list(_registry.keys())
+
+
+# OpenAI 兼容 provider 的默认 api_base / model（DB key 未填时兜底）
+_OPENAI_DEFAULTS: dict[str, tuple[str, str]] = {
+    "deepseek": ("https://api.deepseek.com", "deepseek-chat"),
+    "doubao": ("https://ark.cn-beijing.volces.com/api/v3", "doubao-pro-32k"),
+    "qwen": ("https://dashscope.aliyuncs.com/compatible-mode/v1", "qwen-plus"),
+}
+
+
+async def auto_register_all(session) -> list[str]:
+    """env 优先注册，再用 DB ApiKey 池补齐未注册的 provider（C0.8 平台托管）。
+
+    用户不接触 .env：管理员把 key 录到 DB，本函数读 DB 补齐。env 已注册的 provider
+    不被 DB 覆盖（env 优先，便于本地开发覆盖）。返回已注册名列表。
+    """
+    registered = auto_register_from_env()
+    from sqlalchemy import select
+    from ..db.models import ApiKey
+    result = await session.execute(select(ApiKey).where(ApiKey.is_active == True))
+    for row in result.scalars():
+        if row.provider in _registry:
+            continue  # env 已注册，跳过
+        if not _is_real_key(row.api_key):
+            continue
+        if row.provider == "minimax":
+            register_provider("minimax", make_minimax_provider(
+                row.api_key,
+                row.api_base or "https://api.minimaxi.com/anthropic",
+                row.model or "MiniMax M3"))
+            registered.append("minimax")
+        elif row.provider in _OPENAI_DEFAULTS:
+            base_default, model_default = _OPENAI_DEFAULTS[row.provider]
+            register_provider(row.provider, make_openai_provider(
+                row.provider,
+                row.api_base or base_default,
+                row.api_key,
+                row.model or model_default))
+            registered.append(row.provider)
+    return registered

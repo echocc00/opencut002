@@ -22,6 +22,7 @@ from src.agents.skill_loader import SkillLoader
 from src.agents.decision_logger import DecisionLogger
 from src.providers.selector import ProviderSelector
 from src.config import DomainConfig
+from src.tools.material_prep import prepare_materials
 
 
 async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/materials",
@@ -33,10 +34,13 @@ async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/
 
     mat_dir = Path(materials_dir)
     if not mat_dir.exists():
-        print(f"❌ 素材目录不存在: {mat_dir}（需放入 .jpg 素材）")
+        print(f"❌ 素材目录不存在: {mat_dir}（放入 .jpg/.jpeg/.png 图片，或 .mp4 等视频自动抽帧）")
         sys.exit(1)
-    materials = [{"file": str(f.resolve()), "filename": f.name} for f in sorted(mat_dir.glob("*.jpg"))][:5]
-    print(f"✅ {len(materials)}张素材")
+    materials = prepare_materials(mat_dir)
+    if not materials:
+        print(f"❌ 素材目录无可用图片/视频: {mat_dir}（支持 jpg/jpeg/png + mp4/mov/avi/mkv/webm）")
+        sys.exit(1)
+    print(f"✅ {len(materials)}张素材（支持 jpg/jpeg/png + 视频自动抽帧）")
 
     data_dir = Path("data")
     eng = PipelineEngine(data_dir=data_dir, pipeline_file="pipelines/default.yaml")
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--full", action="store_true",
                         help="跑完整 20 阶段管道（含 tts/render，需 minimax key + ffmpeg + node）")
     parser.add_argument("--materials-dir", default="data/projects/edu_test/materials",
-                        help="素材目录（.jpg 文件）")
+                        help="素材目录（图片 jpg/jpeg/png，或视频 mp4/mov/avi/mkv/webm 自动抽帧）")
     parser.add_argument("--project-id", default="edu_test", help="项目 ID（输出到 data/projects/{id}/）")
     parser.add_argument("--domain", default="education", help="领域（travel/education/knowledge_paid/custom）")
     args = parser.parse_args()

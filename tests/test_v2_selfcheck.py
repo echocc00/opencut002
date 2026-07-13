@@ -160,9 +160,9 @@ class TestE2EImportPath:
 
 
 class TestConcurrencyControl:
-    """并发控制"""
+    """并发控制（v0.4.0 改为 Job 模型 + 线程池，不再用进程内 set）"""
 
-    def test_running_projects_set_exists(self):
+    def test_run_delegates_to_job_runner(self):
         content = open("src/api/project_routes.py", encoding="utf-8").read()
-        assert "_running_projects" in content
-        assert "409" in content  # 冲突时返回409
+        assert "start_job_for_project" in content  # /run 委派给 job runner
+        assert "404" in content  # ownership 校验返回 404

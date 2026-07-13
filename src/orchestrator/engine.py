@@ -91,7 +91,15 @@ class PipelineEngine:
             sb_output = state.get_stage_output("storyboard")
             topic_output = state.get_stage_output("topic")
             segments = sb_output.get("segments", []) if sb_output else []
-            score = score_storyboard(segments, topic_output)
+            # 从 style.yaml 读 slideshow_thresholds 覆盖默认阈值（运营可配置）
+            thresholds = None
+            try:
+                from ..config import get_domain_config
+                style = get_domain_config(state.domain).get_style()
+                thresholds = style.get("quality_gates", {}).get("slideshow_thresholds")
+            except Exception:
+                pass
+            score = score_storyboard(segments, topic_output, thresholds=thresholds)
             return {"data": {"total_score": score.total_score, "risk_level": score.risk_level,
                              "passed": score.passed, "suggestions": score.suggestions},
                     "confidence": 90.0 if score.passed else 40.0}
@@ -182,7 +190,11 @@ class PipelineEngine:
     def get_stages(self) -> list[dict]:
         return self.pipeline["pipeline"]["stages"]
 
-    async def run(self, state: ProjectState, start_from: str | None = None) -> ProjectState:
+    async def run(self, state: ProjectState, start_from: str | None = None,
+                  on_stage_start=None) -> ProjectState:
+        """运行管道。on_stage_start: 可选同步回调，每阶段开始执行时调用（用于进度上报）。
+        回调在管道 event loop 内同步调用，建议非阻塞（fire-and-forget）。
+        """
         if self.dry_run:
             stages = self.get_stages()
             print(f"[DRY-RUN] {len(stages)} stages would execute:")
@@ -225,6 +237,11 @@ class PipelineEngine:
             stage.status = StageStatus.IN_PROGRESS
             stage.started_at = datetime.now()
             state.save(self.data_dir)
+            if on_stage_start is not None:
+                try:
+                    on_stage_start(name)
+                except Exception:
+                    log.warning(f"on_stage_start 回调失败 for {name}", exc_info=True)
 
             # 发射事件
             if self.event_store:

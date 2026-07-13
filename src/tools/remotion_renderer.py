@@ -96,6 +96,7 @@ class RemotionRenderer:
         style: dict[str, str] | None = None,
         cover_image: str = "",
         domain: str = "education",
+        ai_label: bool = False,
     ) -> dict[str, Any]:
         """构建 Remotion 渲染数据
 
@@ -134,4 +135,5 @@ class RemotionRenderer:
             "style": default_style,
             "coverImage": cover_image,
             "domain": domain,
+            "aiLabel": ai_label,
         }

@@ -72,18 +72,35 @@ cp .env.example .env   # 然后填真实 key
 ## 架构（六层）
 
 ```
-api/        HTTP 入口（FastAPI）
+api/        HTTP 入口（FastAPI）：auth / projects / jobs / admin / panel
+db/         SQLAlchemy 模型 + 引擎（User/ApiKey/Project/Job，SQLite+WAL）
 orchestrator/  管道引擎 + 状态 + 审批 + 质量关卡
 agents/     20 个阶段 Agent（每个阶段一个）
-tools/      领域无关工具（TTS / Remotion 渲染 / 图像匹配 / 转写）
+tools/      领域无关工具（TTS / Remotion 渲染 / 图像匹配 / 素材准备）
 providers/  多 LLM provider 适配（minimax / doubao / deepseek / qwen）
-config.py   领域配置加载（domains/<domain>/）
-data/       项目状态与产物（data/projects/<id>/）
+config.py   领域配置加载 + Settings（含 SaaS 字段）
+web/        Next.js 前端（v0.4.0，登录/上传/进度/下载）
+data/       项目状态与产物（data/projects/<id>/）+ opencut.db
 ```
 
 跨语言数据契约（Python → Remotion）见 [docs/data-flow-contract.md](docs/data-flow-contract.md)。
 **改任何渲染数据字段前必读此文档**：Python 侧 snake_case，Remotion 侧 camelCase，
 转换在 `RemotionRenderer.build_render_data()`。
+
+## SaaS 层（v0.4.0）
+
+CLI（`scripts/run_full.py`）和 Web（`web/` + `src/api/`）两种入口共用同一管道。
+
+**Web 运行**：
+```bash
+uvicorn src.api.app:app --reload --port 8000   # 后端
+cd web && npm install && npm run dev            # 前端 http://localhost:3000
+```
+
+- **鉴权**：JWT（`src/api/auth.py`），`/api/auth/register|login|me`。受保护端点 `Depends(get_current_user)`，admin 端点 `Depends(get_admin_user)`。
+- **任务**：`POST /api/projects/{id}/run` 或 `POST /api/jobs?project_id=X` 启动。`JobRunner`（`src/api/job_runner.py`）在线程池跑 `PipelineEngine`（阻塞 subprocess 不卡 event loop），用 sync session 写 Job 状态（SQLite WAL 允许 async 读 + sync 写并发）。MVP 无 Celery，进程重启丢运行中任务。
+- **API Key 托管**：管理员 `POST /api/admin/keys` 录 key 到 DB，`auto_register_all`（`provider_registry.py`）env 优先 + DB 补齐。用户不接触 `.env`。
+- **MVP 边界**：SQLite（非 Postgres）、线程池（非 Celery/Redis）、密码+JWT（非 OAuth）、无计费（v0.5.0）、无 alembic。生产需补这些 + 反向代理 HTTPS。
 
 ## 领域
 
@@ -119,9 +136,10 @@ data/       项目状态与产物（data/projects/<id>/）
 4. **素材分析必须用多模态视觉**：文本 LLM 看不见图，会幻觉（把教室说成雪山）。
    `material_analysis_agent` 优先 minimax M3 多模态，doubao 次之，不要回退到纯文本 provider。
 
-5. **素材必须是 .jpg**：`run_full.py` 只 glob `*.jpg`（取前 5 张）。
-   源是视频时先 ffmpeg 抽帧：`ffmpeg -i src.mp4 -vf fps=1/5 frame_%02d.jpg`
-  （每 5 秒一帧，挑 5-10 张代表不同场景的）。
+5. **素材支持图片 + 视频**：`run_full.py` 经 `material_prep.prepare_materials`
+   收录 `*.jpg/*.jpeg/*.png` 图片 + `*.mp4/*.mov/*.avi/*.mkv/*.webm/*.m4v` 视频
+   （ffmpeg 自动每 5 秒抽一帧到 `.frames/<stem>/`），取前 5 张。ffmpeg 不在时跳过视频
+   仅用图片。图片优先于视频抽帧排序。
 
 6. **字幕是整段淡入**：不逐词高亮。句子-画面对齐由段落级 TTS 时长保证
    （1 段文案 = 1 段 TTS = 1 个分镜段）。改字幕组件见
@@ -133,6 +151,10 @@ data/       项目状态与产物（data/projects/<id>/）
 8. **AI 输出包 xxx_plan 命名空间**：AI 偶发把整个输出包在 `rhythm_plan` / `storyboard_plan`
    等字段里，导致下游 preflight 找不到 `segment_timings` 等顶层字段而 ERROR。
    `base_agent._flatten_plan_namespace` 自动展平 `xxx_plan` -> 顶层，无需各 stage 单独处理。
+
+9. **AI 生成标识（合规储备，默认关）**：设 `OPENCUT_AI_LABEL=1` 开启渲染右下角「AI 生成」
+   角标（`remotion/src/components/AiLabel.tsx`）。国内《AI内容标识办法》2025-09-01 生效后
+   B2C 公网上线需开启；B2B 私有化部署可不开。`render_agent._ai_label_enabled()` 读环境变量。
 
 ## Agent 操作守则
 

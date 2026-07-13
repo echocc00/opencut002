@@ -3,6 +3,7 @@ import { TitleScene } from "./scenes/TitleScene";
 import { SegmentScene } from "./scenes/SegmentScene";
 import { CoverScene } from "./scenes/CoverScene";
 import { Soundtrack } from "./components/Soundtrack";
+import { AiLabel } from "./components/AiLabel";
 import { resolveTheme } from "./theme";
 
 interface SegmentData {
@@ -23,6 +24,7 @@ interface VideoData {
   bgmVolume: number;
   coverImage?: string;
   domain?: string;
+  aiLabel?: boolean;
 }
 
 export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
@@ -80,6 +82,9 @@ export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
           <Soundtrack src={data.voicePath} volume={1.0} fadeInSeconds={0.3} fadeOutSeconds={0.5} />
         </Sequence>
       )}
+
+      {/* Layer 5: AI 生成标识（合规储备，默认关，由 aiLabel 字段控制） */}
+      <AiLabel visible={data.aiLabel ?? false} />
     </AbsoluteFill>
   );
 };

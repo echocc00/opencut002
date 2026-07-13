@@ -102,6 +102,16 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
 - **API Key 托管**：管理员 `POST /api/admin/keys` 录 key 到 DB，`auto_register_all`（`provider_registry.py`）env 优先 + DB 补齐。用户不接触 `.env`。
 - **MVP 边界**：SQLite（非 Postgres）、线程池（非 Celery/Redis）、密码+JWT（非 OAuth）、无计费（v0.5.0）、无 alembic。生产需补这些 + 反向代理 HTTPS。
 
+## 分支策略（双方向维护）
+
+本分支 `saas` = **SaaS/私有化版**（含 web/db/auth/jobs/key 托管）。CLI/agent 方向在 `main` 分支（精简，无 SaaS）。
+
+- **共同需求**（新领域、管道修复、TTS/渲染改进等）：先在 `main` 提，再 `git merge main` 进 `saas`。
+- **SaaS 专属**（web/auth/计费/任务层/key 托管）：只提 `saas`，不进 `main`。
+- **拉取**：`git clone -b saas`（本版）或 `git clone -b main`（CLI 版）。
+- **永远不把 `saas` 合回 `main`**（会把 SaaS 文件带进精简版）。
+- **版本**：SaaS 版 tag `v0.x.0-saas`（本分支），CLI 版 tag `v0.x.0-cli`（main 分支）。共同改动两版一起升。
+
 ## 领域
 
 内置 4 个：`education` / `travel` / `knowledge_paid` / `custom`（模板）。

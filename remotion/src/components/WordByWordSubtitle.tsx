@@ -1,20 +1,30 @@
 /**
- * 字幕组件 - 单行 ≤16 字分块轮播
+ * 字幕组件 - 单行显示（chunk-per-segment 后每段已是 ≤16 字块，无需 even-split）
  *
- * 整段文案按标点切成 ≤16 字的块，段内 even-split 轮播（块均分段时长）。
- * 单行、大字号、逐块淡入。段级同步不变（段 = TTS = 音频 = 画面）；
- * 块与语音近似对齐（even-split，±0.3s 内）。
+ * 每个分镜段的 subtitle 就是 TTS 的一个 ≤16 字块，段级精确同步（TTS 是时间源）。
+ * 单行、大字号、淡入。同段落连续块（continuation）不重复淡入。
  */
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
-import { splitSubtitle } from "../utils/splitSubtitle";
 
-interface ChunkViewProps {
-  chunk: string;
-  opacity: number;
-  translateY: number;
-}
+export const WordByWordSubtitle: React.FC<{
+  text: string;
+  springConfig?: { damping: number; stiffness: number; mass: number };
+  continuation?: boolean;
+}> = ({ text, springConfig, continuation = false }) => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
 
-function ChunkView({ chunk, opacity, translateY }: ChunkViewProps) {
+  // continuation（同段落连续块）：不重复淡入，仅最后淡出
+  const enter = continuation ? 1 : spring({ frame, fps, config: springConfig || { damping: 18, stiffness: 120 } });
+  const fadeOut = interpolate(
+    frame, [durationInFrames - 6, durationInFrames], [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const opacity = continuation ? fadeOut : enter * fadeOut;
+  const translateY = continuation ? 0 : (1 - enter) * 15;
+
+  if (!text) return null;
+
   return (
     <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 90 }}>
       <div style={{ opacity, transform: `translateY(${translateY}px)`, textAlign: "center", maxWidth: "96%" }}>
@@ -27,33 +37,9 @@ function ChunkView({ chunk, opacity, translateY }: ChunkViewProps) {
           textShadow: "0 2px 12px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.6)",
           letterSpacing: 1,
         }}>
-          {chunk}
+          {text}
         </span>
       </div>
     </AbsoluteFill>
   );
-}
-
-export const WordByWordSubtitle: React.FC<{
-  text: string;
-  springConfig?: { damping: number; stiffness: number; mass: number };
-}> = ({ text, springConfig }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
-  const chunks = splitSubtitle(text || "", 16);
-
-  if (chunks.length === 0) return null;
-
-  // 单块：整段淡入（短文案）
-  if (chunks.length === 1) {
-    const enter = spring({ frame, fps, config: springConfig || { damping: 18, stiffness: 120 } });
-    return <ChunkView chunk={chunks[0]} opacity={enter} translateY={(1 - enter) * 15} />;
-  }
-
-  // 多块：段内 even-split 轮播
-  const perChunk = Math.max(durationInFrames / chunks.length, 1);
-  const idx = Math.min(Math.floor(frame / perChunk), chunks.length - 1);
-  const localFrame = frame - idx * perChunk;
-  const fade = interpolate(localFrame, [0, 4], [0, 1], { extrapolateRight: "clamp" });
-  return <ChunkView chunk={chunks[idx]} opacity={fade} translateY={(1 - fade) * 10} />;
 };

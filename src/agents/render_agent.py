@@ -174,20 +174,24 @@ class RenderAgent(BaseStageAgent):
         """
         text_cards = text_cards or []
         segments = []
+        prev_para = -1
         for pt in paragraph_timing:
-            i = pt["index"]
+            chunk_i = pt["index"]
+            para_i = pt.get("paragraph_index", chunk_i)  # 兼容旧 timing（无 paragraph_index）
             transition = "crossfade"
-            if i < len(sb_segments) and sb_segments[i].get("transition"):
-                transition = sb_segments[i]["transition"]
+            if para_i < len(sb_segments) and sb_segments[para_i].get("transition"):
+                transition = sb_segments[para_i]["transition"]
             segments.append({
-                "index": i,
-                "image": matches.get(str(i), ""),
+                "index": chunk_i,
+                "image": matches.get(str(para_i), ""),
                 "actual_duration": round(pt["duration"], 3),
                 "time_start": round(pt["start"], 3),
                 "subtitle": pt["text"],
                 "transition": transition,
-                "text_card": i in text_cards,
+                "text_card": para_i in text_cards,
+                "continuation": para_i == prev_para,  # 同段落连续块：跳过入场/退场避免闪烁
             })
+            prev_para = para_i
         return segments
 
     def _build_prompt(self, *a): return ""

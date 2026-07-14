@@ -95,6 +95,44 @@ def _map_emotion(tone: str) -> str:
     return ""
 
 
+def split_into_chunks(text: str, max_chars: int = 16) -> list[str]:
+    """把文本切成 ≤max_chars 的块：按句末标点语义优先，超长均分（如 18->9+9，40->14+13+13）。
+
+    chunk-per-segment 用：每块单独 TTS -> 段级精确同步，字幕单行 ≤16 字。
+    """
+    import re
+    text = (text or "").strip()
+    if not text:
+        return []
+    if len(text) <= max_chars:
+        return [text]
+    # 按句末标点 + 逗号/分号/换行切短语（标点附着前短语，语义优先）
+    parts = re.split(r"(?<=[。！？!?\n，、；;])", text)
+    phrases = [p.strip() for p in parts if p.strip()]
+
+    chunks: list[str] = []
+    cur = ""
+    for ph in phrases:
+        if len(ph) > max_chars:
+            # 超长短语均分成 ≤max_chars 的块
+            if cur:
+                chunks.append(cur)
+                cur = ""
+            n = (len(ph) + max_chars - 1) // max_chars
+            size = (len(ph) + n - 1) // n
+            for i in range(0, len(ph), size):
+                chunks.append(ph[i:i + size])
+        elif len(cur) + len(ph) <= max_chars:
+            cur += ph
+        else:
+            if cur:
+                chunks.append(cur)
+            cur = ph
+    if cur:
+        chunks.append(cur)
+    return chunks
+
+
 class TTSAgent(BaseStageAgent):
     def get_task_type(self) -> TaskType:
         return TaskType.GENERAL
@@ -132,36 +170,43 @@ class TTSAgent(BaseStageAgent):
         word_timestamps: list[dict] = []
         t = 0.0
 
-        # 逐段 TTS
-        for i, p in enumerate(paragraphs):
+        # 逐段 TTS：每段切成 ≤16 字块，每块单独 TTS（chunk-per-segment 精确同步）
+        chunk_idx = 0
+        for para_i, p in enumerate(paragraphs):
             text = p.get("text", "")
             if not text:
                 continue
             emotion = _map_emotion(p.get("emotion_tone", ""))
-            seg_path = f"{audio_dir}/voice_{i}.mp3"
-            try:
-                await generate_tts(text, voice_key, seg_path, emotion=emotion)
-            except Exception as e:
-                log.error(f"TTS 段 {i} 失败: {e}")
-                return {"data": {"audio_path": "", "error": str(e),
-                                 "paragraph_timing": [], "word_timestamps": []},
-                        "confidence": 20.0}
-            dur = _probe_duration(seg_path)
-            seg_paths.append(seg_path)
-            paragraph_timing.append({
-                "index": i, "start": round(t, 3), "end": round(t + dur, 3),
-                "duration": round(dur, 3), "text": text,
-            })
-            # 词级时间戳：该段字符均匀分布在段时长内（绝对时间，供兼容用）
-            chars = list(text.replace(" ", "").replace("\n", ""))
-            char_dur = dur / len(chars) if chars else 0
-            for j, c in enumerate(chars):
-                word_timestamps.append({
-                    "word": c,
-                    "start": round(t + j * char_dur, 3),
-                    "end": round(t + (j + 1) * char_dur, 3),
+            chunks = split_into_chunks(text, 16)
+            if not chunks:
+                chunks = [text]
+            for chunk_text in chunks:
+                seg_path = f"{audio_dir}/voice_{chunk_idx}.mp3"
+                try:
+                    await generate_tts(chunk_text, voice_key, seg_path, emotion=emotion)
+                except Exception as e:
+                    log.error(f"TTS 块 {chunk_idx} 失败: {e}")
+                    return {"data": {"audio_path": "", "error": str(e),
+                                     "paragraph_timing": [], "word_timestamps": []},
+                            "confidence": 20.0}
+                dur = _probe_duration(seg_path)
+                seg_paths.append(seg_path)
+                paragraph_timing.append({
+                    "index": chunk_idx, "paragraph_index": para_i,
+                    "start": round(t, 3), "end": round(t + dur, 3),
+                    "duration": round(dur, 3), "text": chunk_text,
                 })
-            t += dur
+                # 词级时间戳：该块字符均匀分布在块时长内（绝对时间，供兼容用）
+                chars = list(chunk_text.replace(" ", "").replace("\n", ""))
+                char_dur = dur / len(chars) if chars else 0
+                for j, c in enumerate(chars):
+                    word_timestamps.append({
+                        "word": c,
+                        "start": round(t + j * char_dur, 3),
+                        "end": round(t + (j + 1) * char_dur, 3),
+                    })
+                t += dur
+                chunk_idx += 1
 
         if not seg_paths:
             return {"data": {"audio_path": "", "paragraph_timing": [], "word_timestamps": []},
@@ -184,7 +229,7 @@ class TTSAgent(BaseStageAgent):
                 "word_timestamps": word_timestamps,
                 "paragraph_timing": paragraph_timing,
                 "full_text": full_text,
-                "transcribe_method": "tts-per-paragraph",
+                "transcribe_method": "tts-per-chunk",
             },
             "confidence": 80.0,
         }

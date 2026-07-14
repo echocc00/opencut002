@@ -193,6 +193,13 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     用原图，render 用贴纸图）。贴纸随 Ken Burns 缩放自然对齐。需装 `[face]` extras：
     `pip install -e ".[face]"`（opencv-python + Pillow）。模型 `src/tools/models/yunet.onnx`。
 
+12. **素材分层兜底（文案驱动缺口处理）**：`image_matching` 按 AI 匹配度 s 分层：
+    s≥0.7 直接用匹配池图；0.4≤s<0.7 第1层弱匹配复用；s<0.4 缺口 -> 第2层文字卡
+   （`TextCardScene`，无图）或第3层生图（`src/tools/image_generator.py`，opt-in
+    `OPENCUT_IMAGE_GEN=1`，minimax image-01，prompt=段落内容+池风格描述）。生图触发：
+    缺口≥3 或占比≥40%。阈值 + 开关全 env 可调（`OPENCUT_MATCH_STRONG/WEAK/GEN_TRIGGER_COUNT/
+    GEN_TRIGGER_RATIO/IMAGE_GEN`）。每段决策写 `image_matching` 输出 `layer_log` 便于观测调参。
+
 ## Agent 操作守则
 
 - **改代码前**：先读 [docs/data-flow-contract.md](docs/data-flow-contract.md) 确认契约；

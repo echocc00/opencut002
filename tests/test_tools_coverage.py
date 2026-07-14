@@ -17,19 +17,20 @@ class TestImageMatcher:
         assert "matches" in prompt
 
     @pytest.mark.asyncio
-    async def test_match_images_ai_path(self):
+    async def test_match_images_ai_path_with_score(self):
         from src.tools.image_matcher import match_images
 
         async def mock_ai(prompt):
-            return '{"matches": [{"paragraph": 0, "image": "img1.jpg"}, {"paragraph": 1, "image": "img2.jpg"}]}'
+            return '{"matches": [{"paragraph": 0, "image": "img1.jpg", "relevance": 0.9}, {"paragraph": 1, "image": "img2.jpg", "relevance": 0.6}]}'
 
         result = await match_images(
             [{"text": "a", "image_hint": ""}, {"text": "b", "image_hint": ""}],
             [{"file": "img1.jpg"}, {"file": "img2.jpg"}],
             ai_complete=mock_ai,
         )
-        assert result["0"] == "img1.jpg"
-        assert result["1"] == "img2.jpg"
+        assert result["0"]["image"] == "img1.jpg"
+        assert result["0"]["score"] == 0.9
+        assert result["1"]["image"] == "img2.jpg"
 
     @pytest.mark.asyncio
     async def test_match_images_fallback_uses_hint(self):
@@ -39,27 +40,31 @@ class TestImageMatcher:
             [{"file": "img1.jpg"}, {"file": "img2.jpg"}],
             ai_complete=None,
         )
-        assert result["0"] == "img2.jpg"  # hint 是真实可用图片，优先用 hint
+        assert result["0"]["image"] == "img2.jpg"  # hint 是真实可用图片，优先用 hint
+        assert result["0"]["score"] == 1.0  # 显式 hint 视为强匹配
 
     @pytest.mark.asyncio
-    async def test_match_images_fallback_sequential(self):
+    async def test_match_images_gap_empty_when_no_match(self):
+        """无 AI 匹配、无 hint -> 缺口段 image='' score=0（不强制分配）"""
         from src.tools.image_matcher import match_images
         result = await match_images(
             [{"text": "a"}, {"text": "b"}],
             [{"file": "first.jpg"}, {"file": "second.jpg"}],
             ai_complete=None,
         )
-        assert result["0"] == "first.jpg"
-        assert result["1"] == "second.jpg"
+        assert result["0"]["image"] == ""
+        assert result["0"]["score"] == 0.0
+        assert result["1"]["image"] == ""
+        assert result["1"]["score"] == 0.0
 
     @pytest.mark.asyncio
-    async def test_match_images_fallback_empty_when_no_images(self):
+    async def test_match_images_empty_when_no_images(self):
         from src.tools.image_matcher import match_images
         result = await match_images([{"text": "a"}], [], ai_complete=None)
-        assert result["0"] == ""
+        assert result["0"]["image"] == ""
 
     @pytest.mark.asyncio
-    async def test_match_images_ai_failure_falls_back(self):
+    async def test_match_images_ai_failure_falls_back_to_hint(self):
         from src.tools.image_matcher import match_images
 
         async def mock_ai(prompt):
@@ -70,7 +75,8 @@ class TestImageMatcher:
             [{"file": "img1.jpg"}, {"file": "img2.jpg"}],
             ai_complete=mock_ai,
         )
-        assert result["0"] == "img2.jpg"  # AI 失败 -> hint（真实可用）兜底
+        assert result["0"]["image"] == "img2.jpg"  # AI 失败 -> hint（真实可用）兜底
+
 
 
 # ========== migration ==========

@@ -53,9 +53,10 @@ class RenderAgent(BaseStageAgent):
         cw_output = state.get_stage_output("copywriting")
         im_output = state.get_stage_output("image_matching")
         matches = im_output.get("matches", {}) if im_output else {}
+        text_cards = im_output.get("text_cards", []) if im_output else []
         sb_segments = storyboard.get("segments", []) if storyboard else []
         paragraph_timing = tts_output.get("paragraph_timing", []) if tts_output else []
-        segments = self._build_paragraph_segments(paragraph_timing, matches, sb_segments)
+        segments = self._build_paragraph_segments(paragraph_timing, matches, sb_segments, text_cards)
 
         # 从领域配置读取style并注入
         from ..config import get_domain_config, get_settings
@@ -93,6 +94,8 @@ class RenderAgent(BaseStageAgent):
         # 校验 segment/cover images 是真实文件；storyboard AI 可能编造文件名，不存在则用素材兜底
         material_files = [m.get("file", "") for m in state.materials if m.get("file")]
         for i, seg in enumerate(segments):
+            if seg.get("text_card"):
+                continue  # 文字卡段不配图，不兜底复用
             img = seg.get("image", "")
             if not img or not _Path(img).exists():
                 seg["image"] = material_files[i % len(material_files)] if material_files else ""
@@ -161,12 +164,15 @@ class RenderAgent(BaseStageAgent):
         return merged
 
     def _build_paragraph_segments(self, paragraph_timing: list[dict],
-                                  matches: dict, sb_segments: list[dict]) -> list[dict]:
+                                  matches: dict, sb_segments: list[dict],
+                                  text_cards: list[int] | None = None) -> list[dict]:
         """按 TTS 段落时间戳构建分镜：一段一画面，时长=该段 TTS 精确时长。
 
         段落时长来自每段单独 TTS 的 ffprobe 测量（精确），不依赖转录反推。
         字幕整段淡入显示（不再逐词高亮），故不生成 subtitle_words。
+        text_cards 中的段标记为文字卡（无图，render 用 TextCardScene）。
         """
+        text_cards = text_cards or []
         segments = []
         for pt in paragraph_timing:
             i = pt["index"]
@@ -180,6 +186,7 @@ class RenderAgent(BaseStageAgent):
                 "time_start": round(pt["start"], 3),
                 "subtitle": pt["text"],
                 "transition": transition,
+                "text_card": i in text_cards,
             })
         return segments
 

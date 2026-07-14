@@ -182,10 +182,10 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
    角标（`remotion/src/components/AiLabel.tsx`）。国内《AI内容标识办法》2025-09-01 生效后
    B2C 公网上线需开启；B2B 私有化部署可不开。`render_agent._ai_label_enabled()` 读环境变量。
 
-10. **字幕单行 ≤16 字分块轮播**：`WordByWordSubtitle.tsx` 把段字幕按标点切成 ≤16 汉字字符的块，
-    段内 even-split 轮播（用 `useVideoConfig().durationInFrames` 算段长），单行 60px 字号。
-    段级同步不变（段=TTS=音频=画面）；块与语音近似对齐（±0.3s）。切分逻辑在
-    `remotion/src/utils/splitSubtitle.ts`。
+10. **字幕单行 ≤16 字 chunk-per-segment**：`tts_agent.split_into_chunks` 把每段文案按
+    标点（句号/逗号）切成 ≤16 字块，**每块单独 TTS + 单独分镜段**（段级精确同步，TTS 是时间源）。
+    `WordByWordSubtitle.tsx` 单行 60px 显示（每段已是 ≤16 块，无需 even-split）。
+    超长无标点短语均分（如 18->9+9，不是 16+2）。同段落连续块 `continuation=true` 跳过入场/退场避免闪烁。
 
 11. **人脸遮盖（opt-in，默认关）**：设 `OPENCUT_FACE_MASK=1` 开启。`src/tools/face_masker.py`
     用 opencv YuNet 检测素材图所有人脸，可爱贴纸（`src/tools/stickers/*.png`，openmoji）bake 进图，

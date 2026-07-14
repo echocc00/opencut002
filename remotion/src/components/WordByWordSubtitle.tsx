@@ -1,41 +1,43 @@
 /**
- * 字幕组件 - 单行显示（chunk-per-segment 后每段已是 ≤16 字块，无需 even-split）
+ * 字幕组件 - 整段淡入
  *
- * 每个分镜段的 subtitle 就是 TTS 的一个 ≤16 字块，段级精确同步（TTS 是时间源）。
- * 单行、大字号、淡入。同段落连续块（continuation）不重复淡入。
+ * 一句字幕整段淡入显示（spring opacity + 上移），暗色背板保证可读性。
+ * 不逐词高亮 -- 句子-画面对齐由段落级 TTS 时长保证。
  */
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring } from "remotion";
 
 export const WordByWordSubtitle: React.FC<{
   text: string;
   springConfig?: { damping: number; stiffness: number; mass: number };
-  continuation?: boolean;
-}> = ({ text, springConfig, continuation = false }) => {
+}> = ({ text, springConfig }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  // continuation（同段落连续块）：不重复淡入，仅最后淡出
-  const enter = continuation ? 1 : spring({ frame, fps, config: springConfig || { damping: 18, stiffness: 120 } });
-  const fadeOut = interpolate(
-    frame, [durationInFrames - 6, durationInFrames], [1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-  const opacity = continuation ? fadeOut : enter * fadeOut;
-  const translateY = continuation ? 0 : (1 - enter) * 15;
-
-  if (!text) return null;
+  const enterProgress = spring({
+    frame, fps,
+    config: springConfig || { damping: 18, stiffness: 120 },
+  });
 
   return (
-    <AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: 90 }}>
-      <div style={{ opacity, transform: `translateY(${translateY}px)`, textAlign: "center", maxWidth: "96%" }}>
+    <AbsoluteFill style={{
+      justifyContent: "flex-end",
+      alignItems: "center",
+      paddingBottom: 60,
+    }}>
+      <div style={{
+        opacity: enterProgress,
+        transform: `translateY(${(1 - enterProgress) * 15}px)`,
+        maxWidth: "92%",
+        textAlign: "center",
+      }}>
         <span style={{
           color: "#FFFFFF",
-          fontSize: 60,
-          fontWeight: 800,
+          fontSize: 42,
+          fontWeight: 700,
           fontFamily: "Noto Sans SC, sans-serif",
-          whiteSpace: "nowrap",
-          textShadow: "0 2px 12px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.6)",
-          letterSpacing: 1,
+          whiteSpace: "pre-wrap",
+          lineHeight: 1.5,
+          textShadow: "0 2px 8px rgba(0,0,0,0.8)",
         }}>
           {text}
         </span>

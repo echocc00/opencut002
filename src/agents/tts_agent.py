@@ -95,90 +95,6 @@ def _map_emotion(tone: str) -> str:
     return ""
 
 
-def split_into_chunks(text: str, max_chars: int = 16) -> list[str]:
-    """把文本切成 ≤max_chars 的块：jieba 分词后按词边界打包（不拆词，避免"帮|助"停顿）。
-
-    chunk-per-segment 用：每块单独 TTS -> 段级精确同步，字幕单行 ≤16 字。
-    无 jieba 时退回标点+均分。
-    """
-    text = (text or "").strip()
-    if not text:
-        return []
-    if len(text) <= max_chars:
-        return [text]
-    try:
-        import jieba
-        words = [w for w in jieba.cut(text) if w]
-    except ImportError:
-        return _split_no_jieba(text, max_chars)
-
-    chunks: list[str] = []
-    cur = ""
-    for w in words:
-        if len(w) > max_chars:
-            # 超长无标点串（罕见）均分
-            if cur:
-                chunks.append(cur)
-                cur = ""
-            for i in range(0, len(w), max_chars):
-                chunks.append(w[i:i + max_chars])
-        elif len(cur) + len(w) <= max_chars:
-            cur += w
-        else:
-            if cur:
-                chunks.append(cur)
-            cur = w
-    if cur:
-        chunks.append(cur)
-    return chunks
-
-
-def _split_no_jieba(text: str, max_chars: int) -> list[str]:
-    """无 jieba 时：按标点切短语，超长均分（fallback）"""
-    import re
-    parts = re.split(r"(?<=[。！？!?\n，、；;])", text)
-    phrases = [p.strip() for p in parts if p.strip()]
-    chunks: list[str] = []
-    cur = ""
-    for ph in phrases:
-        if len(ph) > max_chars:
-            if cur:
-                chunks.append(cur)
-                cur = ""
-            n = (len(ph) + max_chars - 1) // max_chars
-            size = (len(ph) + n - 1) // n
-            for i in range(0, len(ph), size):
-                chunks.append(ph[i:i + size])
-        elif len(cur) + len(ph) <= max_chars:
-            cur += ph
-        else:
-            if cur:
-                chunks.append(cur)
-            cur = ph
-    if cur:
-        chunks.append(cur)
-    return chunks
-
-
-def _trim_silence(path: str) -> None:
-    """去头尾静音（minimax TTS 每段带头尾静音，致字幕音频不同步）。
-
-    ffmpeg silenceremove 去头静音 + areverse 去尾静音。原地替换，失败则保留原文件。
-    """
-    import os
-    import subprocess
-    tmp = path + ".trimmed.mp3"
-    r = subprocess.run(
-        ["ffmpeg", "-y", "-i", path,
-         "-af", "silenceremove=start_periods=1:start_duration=0.05:start_threshold=-40dB,"
-                 "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-40dB,areverse",
-         tmp],
-        capture_output=True, timeout=30,
-    )
-    if r.returncode == 0 and os.path.exists(tmp) and os.path.getsize(tmp) > 0:
-        os.replace(tmp, path)
-
-
 class TTSAgent(BaseStageAgent):
     def get_task_type(self) -> TaskType:
         return TaskType.GENERAL
@@ -216,44 +132,36 @@ class TTSAgent(BaseStageAgent):
         word_timestamps: list[dict] = []
         t = 0.0
 
-        # 逐段 TTS：每段切成 ≤16 字块，每块单独 TTS（chunk-per-segment 精确同步）
-        chunk_idx = 0
-        for para_i, p in enumerate(paragraphs):
+        # 逐段 TTS
+        for i, p in enumerate(paragraphs):
             text = p.get("text", "")
             if not text:
                 continue
             emotion = _map_emotion(p.get("emotion_tone", ""))
-            chunks = split_into_chunks(text, 16)
-            if not chunks:
-                chunks = [text]
-            for chunk_text in chunks:
-                seg_path = f"{audio_dir}/voice_{chunk_idx}.mp3"
-                try:
-                    await generate_tts(chunk_text, voice_key, seg_path, emotion=emotion)
-                except Exception as e:
-                    log.error(f"TTS 块 {chunk_idx} 失败: {e}")
-                    return {"data": {"audio_path": "", "error": str(e),
-                                     "paragraph_timing": [], "word_timestamps": []},
-                            "confidence": 20.0}
-                _trim_silence(seg_path)  # 去头尾静音，对齐字幕与配音
-                dur = _probe_duration(seg_path)
-                seg_paths.append(seg_path)
-                paragraph_timing.append({
-                    "index": chunk_idx, "paragraph_index": para_i,
-                    "start": round(t, 3), "end": round(t + dur, 3),
-                    "duration": round(dur, 3), "text": chunk_text,
+            seg_path = f"{audio_dir}/voice_{i}.mp3"
+            try:
+                await generate_tts(text, voice_key, seg_path, emotion=emotion)
+            except Exception as e:
+                log.error(f"TTS 段 {i} 失败: {e}")
+                return {"data": {"audio_path": "", "error": str(e),
+                                 "paragraph_timing": [], "word_timestamps": []},
+                        "confidence": 20.0}
+            dur = _probe_duration(seg_path)
+            seg_paths.append(seg_path)
+            paragraph_timing.append({
+                "index": i, "start": round(t, 3), "end": round(t + dur, 3),
+                "duration": round(dur, 3), "text": text,
+            })
+            # 词级时间戳：该段字符均匀分布在段时长内（绝对时间，供兼容用）
+            chars = list(text.replace(" ", "").replace("\n", ""))
+            char_dur = dur / len(chars) if chars else 0
+            for j, c in enumerate(chars):
+                word_timestamps.append({
+                    "word": c,
+                    "start": round(t + j * char_dur, 3),
+                    "end": round(t + (j + 1) * char_dur, 3),
                 })
-                # 词级时间戳：该块字符均匀分布在块时长内（绝对时间，供兼容用）
-                chars = list(chunk_text.replace(" ", "").replace("\n", ""))
-                char_dur = dur / len(chars) if chars else 0
-                for j, c in enumerate(chars):
-                    word_timestamps.append({
-                        "word": c,
-                        "start": round(t + j * char_dur, 3),
-                        "end": round(t + (j + 1) * char_dur, 3),
-                    })
-                t += dur
-                chunk_idx += 1
+            t += dur
 
         if not seg_paths:
             return {"data": {"audio_path": "", "paragraph_timing": [], "word_timestamps": []},
@@ -276,7 +184,7 @@ class TTSAgent(BaseStageAgent):
                 "word_timestamps": word_timestamps,
                 "paragraph_timing": paragraph_timing,
                 "full_text": full_text,
-                "transcribe_method": "tts-per-chunk",
+                "transcribe_method": "tts-per-paragraph",
             },
             "confidence": 80.0,
         }

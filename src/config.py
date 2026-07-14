@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     whisper_compute_type: str = "int8"
     remotion_fps: int = 30
     default_llm_provider: str = "deepseek"
+    tts_speed: float = 1.0  # 配 minimax TTS 语速（仅 minimax 引擎生效）
     # SaaS 层（v0.4.0）
     database_url: str = "sqlite+aiosqlite:///./data/opencut.db"
     jwt_secret: str = "dev-secret-change-in-production-min32bytes!"

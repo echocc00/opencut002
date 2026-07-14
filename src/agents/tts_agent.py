@@ -145,7 +145,10 @@ class TTSAgent(BaseStageAgent):
             if text.endswith("。"):
                 tts_text = tts_text[:-1] + "。"
             try:
-                await generate_tts(tts_text, voice_key, seg_path, emotion=emotion)
+                # speed: 从 settings 读（OPENCUT_TTS_SPEED），默认 1.0
+                from ..config import get_settings
+                tts_speed = get_settings().tts_speed
+                await generate_tts(tts_text, voice_key, seg_path, emotion=emotion, speed=tts_speed)
             except Exception as e:
                 log.error(f"TTS 段 {i} 失败: {e}")
                 return {"data": {"audio_path": "", "error": str(e),

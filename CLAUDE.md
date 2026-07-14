@@ -201,6 +201,19 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     缺口≥3 或占比≥40%。阈值 + 开关全 env 可调（`OPENCUT_MATCH_STRONG/WEAK/GEN_TRIGGER_COUNT/
     GEN_TRIGGER_RATIO/IMAGE_GEN`）。每段决策写 `image_matching` 输出 `layer_log` 便于观测调参。
 
+13. **TTS 语速可配（v0.5.1+）**：`minimax` 引擎 `voice_setting.speed` 默认 1.0（minimax
+    默认），可通过 `OPENCUT_TTS_SPEED` env 调整（如 1.2 加速以缩短词内换气停顿，
+    仅 minimax 引擎生效）。`Settings.tts_speed` 字段 (`src/config.py`)。
+    `tts_agent.execute` 透传给 `generate_tts()` 高层。**不要直接传 1.2+ 到 edge-tts**（edge
+    不支持 `speed` 形参）。音色映射 `EDGE_TO_MINIMAX_VOICE` (`src/tools/tts_generator.py`)
+    把 `edge_tts_voice` (如 `zh-CN-XiaoyiNeural`) 映射到 minimax `audiobook_female_1`/等。
+
+14. **render public/ 资源刷新（v0.5.1+ 修复）**：`render_agent._stage_asset` 拷贝素材/音频到
+    `remotion/public/{project_id}/`。**之前 bug**：用 `dest.exists()` 判定，跳过同名老资源
+    会导致上游改了 voice.mp3/cover/bgm 但 public/ 还用旧的（Remotion 无头渲染读 public，
+    state.json 改了不刷 public = 视频用旧资源）。**修法**：同时按 mtime + size 比对，
+    源文件比 dest 新或大小不同视为 stale 重拷。
+
 ## Agent 操作守则
 
 - **改代码前**：先读 [docs/data-flow-contract.md](docs/data-flow-contract.md) 确认契约；

@@ -96,25 +96,52 @@ def _map_emotion(tone: str) -> str:
 
 
 def split_into_chunks(text: str, max_chars: int = 16) -> list[str]:
-    """把文本切成 ≤max_chars 的块：按句末标点语义优先，超长均分（如 18->9+9，40->14+13+13）。
+    """把文本切成 ≤max_chars 的块：jieba 分词后按词边界打包（不拆词，避免"帮|助"停顿）。
 
     chunk-per-segment 用：每块单独 TTS -> 段级精确同步，字幕单行 ≤16 字。
+    无 jieba 时退回标点+均分。
     """
-    import re
     text = (text or "").strip()
     if not text:
         return []
     if len(text) <= max_chars:
         return [text]
-    # 按句末标点 + 逗号/分号/换行切短语（标点附着前短语，语义优先）
+    try:
+        import jieba
+        words = [w for w in jieba.cut(text) if w]
+    except ImportError:
+        return _split_no_jieba(text, max_chars)
+
+    chunks: list[str] = []
+    cur = ""
+    for w in words:
+        if len(w) > max_chars:
+            # 超长无标点串（罕见）均分
+            if cur:
+                chunks.append(cur)
+                cur = ""
+            for i in range(0, len(w), max_chars):
+                chunks.append(w[i:i + max_chars])
+        elif len(cur) + len(w) <= max_chars:
+            cur += w
+        else:
+            if cur:
+                chunks.append(cur)
+            cur = w
+    if cur:
+        chunks.append(cur)
+    return chunks
+
+
+def _split_no_jieba(text: str, max_chars: int) -> list[str]:
+    """无 jieba 时：按标点切短语，超长均分（fallback）"""
+    import re
     parts = re.split(r"(?<=[。！？!?\n，、；;])", text)
     phrases = [p.strip() for p in parts if p.strip()]
-
     chunks: list[str] = []
     cur = ""
     for ph in phrases:
         if len(ph) > max_chars:
-            # 超长短语均分成 ≤max_chars 的块
             if cur:
                 chunks.append(cur)
                 cur = ""
@@ -131,6 +158,25 @@ def split_into_chunks(text: str, max_chars: int = 16) -> list[str]:
     if cur:
         chunks.append(cur)
     return chunks
+
+
+def _trim_silence(path: str) -> None:
+    """去头尾静音（minimax TTS 每段带头尾静音，致字幕音频不同步）。
+
+    ffmpeg silenceremove 去头静音 + areverse 去尾静音。原地替换，失败则保留原文件。
+    """
+    import os
+    import subprocess
+    tmp = path + ".trimmed.mp3"
+    r = subprocess.run(
+        ["ffmpeg", "-y", "-i", path,
+         "-af", "silenceremove=start_periods=1:start_duration=0.05:start_threshold=-40dB,"
+                 "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-40dB,areverse",
+         tmp],
+        capture_output=True, timeout=30,
+    )
+    if r.returncode == 0 and os.path.exists(tmp) and os.path.getsize(tmp) > 0:
+        os.replace(tmp, path)
 
 
 class TTSAgent(BaseStageAgent):
@@ -189,6 +235,7 @@ class TTSAgent(BaseStageAgent):
                     return {"data": {"audio_path": "", "error": str(e),
                                      "paragraph_timing": [], "word_timestamps": []},
                             "confidence": 20.0}
+                _trim_silence(seg_path)  # 去头尾静音，对齐字幕与配音
                 dur = _probe_duration(seg_path)
                 seg_paths.append(seg_path)
                 paragraph_timing.append({

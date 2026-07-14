@@ -53,8 +53,17 @@ class MaterialAnalysisAgent(BaseStageAgent):
 
         response = None
         try:
-            response = await provider.complete(prompt, images=image_paths)
-            output = self._extract_json(response.text)
+            # 结果缓存（OPENCUT_CACHE=1 开启）：相同 prompt + 图片内容命中跳过 API
+            from ..tools.result_cache import make_key, get_json, set_json
+            cache_key = make_key(prompt, *image_paths)
+            cached = get_json(cache_key, "material_analysis")
+            if cached is not None:
+                output = cached
+                response = None  # 命中缓存时不计 token / cost
+            else:
+                response = await provider.complete(prompt, images=image_paths)
+                output = self._extract_json(response.text)
+                set_json(cache_key, "material_analysis", output)
         except Exception as e:
             log.warning(f"视觉分析失败，回退到基础分析: {e}")
             output = {}

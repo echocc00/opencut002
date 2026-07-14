@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -11,9 +12,18 @@ log = logging.getLogger(__name__)
 
 
 class RemotionRenderer:
-    def __init__(self, remotion_dir: str | Path = "remotion", fps: int = 30):
+    def __init__(self, remotion_dir: str | Path = "remotion", fps: int = 30,
+                 concurrency: int | None = None):
         self.remotion_dir = Path(remotion_dir)
         self.fps = fps
+        # 渲染并发线程数；None 时按 OPENCUT_RENDER_CONCURRENCY env，默认 1（不并发）
+        if concurrency is not None:
+            self.concurrency = max(1, concurrency)
+        else:
+            try:
+                self.concurrency = max(1, int(os.environ.get("OPENCUT_RENDER_CONCURRENCY", "1")))
+            except ValueError:
+                self.concurrency = 1
 
     def render(self, project_data: dict[str, Any], output_path: str | Path,
                duration_frames: int | None = None) -> str:
@@ -58,6 +68,7 @@ class RemotionRenderer:
             f"--props={props_path}",
             "--codec=h264",
             f"--fps={self.fps}",
+            f"--concurrency={self.concurrency}",
             # 不传 --frames：让 Remotion 用 Root.tsx calculateMetadata 算的 durationInFrames 渲染全片
             # （含 cover），避免 render 端 duration 与 composition 端不一致的 off-by-one
         ]

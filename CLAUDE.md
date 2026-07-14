@@ -214,6 +214,17 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     state.json 改了不刷 public = 视频用旧资源）。**修法**：同时按 mtime + size 比对，
     源文件比 dest 新或大小不同视为 stale 重拷。
 
+15. **结果缓存（v0.5.2+，opt-in）**：`OPENCUT_CACHE=1` 开启 TTS / 素材分析 / 渲染结果缓存
+    （`src/tools/result_cache.py`）。相同输入跳过 API 调用，降本加速。**默认关**（调试期避免脏缓存）。
+    - TTS: 相同 (text, voice_id, emotion, speed) 命中 `data/cache/tts/<hash>.mp3`
+    - 素材分析: 相同 (prompt + 图片内容 hash) 命中 `data/cache/material_analysis/<hash>.json`
+    - 渲染: 相同 render_data 命中 `data/cache/render/<hash>.mp4`（跳过 Remotion）
+    缓存 key 由 `make_key(*parts)` 算 sha256，Path 参数按文件内容 hash（同名文件改了内容会 miss）。
+    `data/` 已 gitignore，缓存不入库。改了 prompt/voice/图片内容都会自动 miss，无需手动清。
+
+16. **Remotion 渲染并发（v0.5.2+）**：`OPENCUT_RENDER_CONCURRENCY` env 控制 `--concurrency`
+    参数（默认 1）。多核机器设 2-4 可加速渲染。`RemotionRenderer.__init__(concurrency=...)` 也可显式传。
+
 ## Agent 操作守则
 
 - **改代码前**：先读 [docs/data-flow-contract.md](docs/data-flow-contract.md) 确认契约；

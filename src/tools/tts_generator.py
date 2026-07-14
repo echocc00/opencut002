@@ -32,6 +32,16 @@ async def generate_tts_minimax(text: str, voice_id: str, output_path: Path,
     from pathlib import Path as _Path
     output_path = _Path(output_path)
     import httpx
+
+    # 结果缓存（OPENCUT_CACHE=1 开启）：相同 (text, voice_id, emotion, speed) 命中跳过 API
+    from .result_cache import make_key, get_bytes, set_bytes
+    cache_key = make_key(text, voice_id, emotion, speed)
+    cached = get_bytes(cache_key, "tts", "mp3")
+    if cached is not None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(cached)
+        return str(output_path)
+
     api_key = api_key or os.environ.get("MINIMAX_API_KEY", "")
     if not api_key:
         raise RuntimeError("无 MINIMAX_API_KEY")
@@ -57,7 +67,9 @@ async def generate_tts_minimax(text: str, voice_id: str, output_path: Path,
             raise RuntimeError(f"MiniMax TTS 无 audio: {r.text[:200]}")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(bytes.fromhex(audio_hex))
+    audio_bytes = bytes.fromhex(audio_hex)
+    output_path.write_bytes(audio_bytes)
+    set_bytes(cache_key, "tts", "mp3", audio_bytes)
     return str(output_path)
 
 

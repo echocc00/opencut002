@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     whisper_compute_type: str = "int8"
     remotion_fps: int = 30
     default_llm_provider: str = "deepseek"
+    tts_speed: float = 1.0  # 配 minimax TTS 语速（仅 minimax 引擎生效）
 
 
 _settings: Settings | None = None

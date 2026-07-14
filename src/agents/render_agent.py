@@ -80,14 +80,24 @@ class RenderAgent(BaseStageAgent):
                 return ""
             src = _Path(asset_path)
             if not src.is_absolute():
-                src = _Path.cwd() / src
+                src = _Path.cwd() / asset_path
             if not src.exists():
                 return asset_path
             # 人脸遮盖（opt-in，OPENCUT_FACE_MASK=1）：图片用 masked 副本，非图片返回原图
             from ..tools.face_masker import get_masked_path
             staged = _Path(get_masked_path(str(src)))
             dest = public_dir / staged.name
-            if not dest.exists():
+            # 检测 stale: 不存在、源比 dest 新、或大小不同都视为过期，重拷
+            stale = True
+            if dest.exists():
+                try:
+                    src_stat = staged.stat()
+                    dest_stat = dest.stat()
+                    if dest_stat.st_mtime >= src_stat.st_mtime and dest_stat.st_size == src_stat.st_size:
+                        stale = False
+                except OSError:
+                    pass
+            if stale:
                 shutil.copy2(staged, dest)
             return f"{state.project_id}/{staged.name}"
 

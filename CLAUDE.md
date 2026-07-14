@@ -27,6 +27,22 @@ python scripts/run_full.py --full \
 
 冒烟测试（不需 ffmpeg/Node，12 阶段）：`python scripts/run_full.py`（默认参数）
 
+## 文案驱动模式（script-first）
+
+默认是「素材驱动」：素材 -> AI 生成文案 -> 匹配素材 -> 出片。
+另支持「文案驱动」：用户给文案 + 素材池 -> 跳过选题/亮点/AI文案 -> 自动匹配素材池 -> 出片。
+
+```bash
+python scripts/run_full.py --script-file <文案.txt> \
+  --materials-dir <素材池目录> --project-id <id> --domain education
+```
+
+- 用 `pipelines/script_first.yaml`（跳 web_research/topic/highlight，copywriting 改用 `ScriptInputAgent`）
+- `ScriptInputAgent` 把用户文案按句号切成 ≤40 字段落，赋默认字段，塞进 copywriting 输出
+- `image_matching` 照常把文案段落匹配到素材池图；匹配不上的段落复用池图（render 兜底 `material_files[i % len]`）
+- 后续 TTS/分镜/渲染/字幕分块/人脸遮盖全部复用
+- 兜底增强（Pexels 搜图 / AI 生图，opt-in）留扩展点，后续按需加
+
 ## 环境要求
 
 | 依赖 | 版本 | 用途 |

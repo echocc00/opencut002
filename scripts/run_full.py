@@ -26,7 +26,8 @@ from src.tools.material_prep import prepare_materials
 
 
 async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/materials",
-               project_id: str = "edu_test", domain: str = "education"):
+               project_id: str = "edu_test", domain: str = "education",
+               script_file: str | None = None):
     if not auto_register_from_env():
         print("❌ 未配置 Provider：请设置 MINIMAX_API_KEY 环境变量（或保留 ../minimax-key.txt）")
         sys.exit(1)
@@ -43,31 +44,34 @@ async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/
     print(f"✅ {len(materials)}张素材（支持 jpg/jpeg/png + 视频自动抽帧）")
 
     data_dir = Path("data")
-    eng = PipelineEngine(data_dir=data_dir, pipeline_file="pipelines/default.yaml")
-
-    if full:
-        # 完整 20 阶段（含 tts/render，走 pipelines/default.yaml）
-        mode = "full（20 阶段，真实 tts+render）"
+    if script_file:
+        eng = PipelineEngine(data_dir=data_dir, pipeline_file="pipelines/script_first.yaml")
+        mode = "script-first（文案驱动，跳过选题/亮点/AI 文案）"
     else:
-        # 简化 12 阶段（跳过 tts/render 需要文件系统的阶段）
-        pipeline_file = data_dir / "edu_pipeline.yaml"
-        stages = [
-            {"name": "material_analysis", "type": "auto", "requires": []},
-            {"name": "web_research", "type": "auto", "requires": ["material_analysis"]},
-            {"name": "topic", "type": "decision", "requires": ["material_analysis", "web_research"]},
-            {"name": "highlight_selection", "type": "decision", "requires": ["topic"]},
-            {"name": "copywriting", "type": "decision", "requires": ["topic", "highlight_selection"]},
-            {"name": "image_matching", "type": "auto", "requires": ["copywriting", "material_analysis"]},
-            {"name": "voice_selection", "type": "decision", "requires": ["copywriting"]},
-            {"name": "storyboard", "type": "decision", "requires": ["copywriting", "image_matching"]},
-            {"name": "bgm", "type": "decision", "requires": ["storyboard"]},
-            {"name": "rhythm", "type": "auto", "requires": ["storyboard", "bgm"]},
-            {"name": "title", "type": "decision", "requires": ["copywriting"]},
-            {"name": "cover", "type": "decision", "requires": ["storyboard"]},
-        ]
-        pipeline_file.write_text(yaml.dump({"pipeline": {"name": "edu", "stages": stages}}), encoding="utf-8")
-        eng.pipeline = eng._load_pipeline(str(pipeline_file))
-        mode = "smoke（12 阶段，跳过 tts/render）"
+        eng = PipelineEngine(data_dir=data_dir, pipeline_file="pipelines/default.yaml")
+        if full:
+            # 完整 20 阶段（含 tts/render，走 pipelines/default.yaml）
+            mode = "full（20 阶段，真实 tts+render）"
+        else:
+            # 简化 12 阶段（跳过 tts/render 需要文件系统的阶段）
+            pipeline_file = data_dir / "edu_pipeline.yaml"
+            stages = [
+                {"name": "material_analysis", "type": "auto", "requires": []},
+                {"name": "web_research", "type": "auto", "requires": ["material_analysis"]},
+                {"name": "topic", "type": "decision", "requires": ["material_analysis", "web_research"]},
+                {"name": "highlight_selection", "type": "decision", "requires": ["topic"]},
+                {"name": "copywriting", "type": "decision", "requires": ["topic", "highlight_selection"]},
+                {"name": "image_matching", "type": "auto", "requires": ["copywriting", "material_analysis"]},
+                {"name": "voice_selection", "type": "decision", "requires": ["copywriting"]},
+                {"name": "storyboard", "type": "decision", "requires": ["copywriting", "image_matching"]},
+                {"name": "bgm", "type": "decision", "requires": ["storyboard"]},
+                {"name": "rhythm", "type": "auto", "requires": ["storyboard", "bgm"]},
+                {"name": "title", "type": "decision", "requires": ["copywriting"]},
+                {"name": "cover", "type": "decision", "requires": ["storyboard"]},
+            ]
+            pipeline_file.write_text(yaml.dump({"pipeline": {"name": "edu", "stages": stages}}), encoding="utf-8")
+            eng.pipeline = eng._load_pipeline(str(pipeline_file))
+            mode = "smoke（12 阶段，跳过 tts/render）"
 
     print(f"模式: {mode}")
     config = DomainConfig(Path(f"domains/{domain}"))
@@ -87,6 +91,15 @@ async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/
                 st.retry_count = 0
                 st.error = None
     state.get_stage("material_analysis").input_data = {"materials": materials}
+
+    # 文案驱动模式：覆盖 copywriting handler + 注入用户文案
+    if script_file:
+        from src.agents.script_input_agent import ScriptInputAgent
+        script_text = Path(script_file).read_text(encoding="utf-8")
+        script_agent = ScriptInputAgent(SkillLoader(config), ProviderSelector(), DecisionLogger(data_dir, project_id))
+        eng.register_handler("copywriting", script_agent.execute)
+        state.get_stage("copywriting").input_data = {"user_script": script_text}
+        print(f"✅ 文案驱动：已加载用户文案（{len(script_text)} 字）")
 
     # web_search mock（避免网络抖动，--full 也不验证搜索能力）
     async def mock_search(*a, **kw):
@@ -123,6 +136,8 @@ if __name__ == "__main__":
                         help="素材目录（图片 jpg/jpeg/png，或视频 mp4/mov/avi/mkv/webm 自动抽帧）")
     parser.add_argument("--project-id", default="edu_test", help="项目 ID（输出到 data/projects/{id}/）")
     parser.add_argument("--domain", default="education", help="领域（travel/education/knowledge_paid/custom）")
+    parser.add_argument("--script-file", default=None,
+                        help="文案驱动模式：提供文案文件路径，跳过选题/亮点/AI文案，自动匹配素材池")
     args = parser.parse_args()
     asyncio.run(main(full=args.full, materials_dir=args.materials_dir,
-                     project_id=args.project_id, domain=args.domain))
+                     project_id=args.project_id, domain=args.domain, script_file=args.script_file))

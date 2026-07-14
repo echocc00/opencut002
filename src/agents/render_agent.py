@@ -1,5 +1,6 @@
 """渲染 Agent - 调用Remotion渲染+FFmpeg编码"""
 from __future__ import annotations
+import json
 import logging
 import os
 from typing import Any
@@ -134,11 +135,37 @@ class RenderAgent(BaseStageAgent):
             fps=get_settings().remotion_fps,
         )
 
-        try:
-            renderer.render(render_data, output_path)
-        except Exception as e:
-            log.error(f"Remotion渲染失败: {e}")
-            return {"data": {"video_path": "", "error": str(e)}, "confidence": 20.0}
+        # 渲染缓存（OPENCUT_CACHE=1）：相同 render_data 跳过 Remotion 渲染，直接拷缓存 mp4
+        import hashlib
+        from ..tools.result_cache import is_enabled as _cache_enabled, _cache_dir as _cache_dir
+        _render_key = hashlib.sha256(
+            json.dumps(render_data, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        ).hexdigest()[:16]
+        _cache_mp4 = _cache_dir("render") / f"{_render_key}.mp4"
+        _cache_hit = False
+        if _cache_enabled() and _cache_mp4.exists():
+            try:
+                import shutil as _shutil
+                _Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+                _shutil.copy2(_cache_mp4, output_path)
+                _cache_hit = True
+                log.info(f"渲染缓存命中，跳过 Remotion: {_render_key}")
+            except OSError:
+                _cache_hit = False
+
+        if not _cache_hit:
+            try:
+                renderer.render(render_data, output_path)
+            except Exception as e:
+                log.error(f"Remotion渲染失败: {e}")
+                return {"data": {"video_path": "", "error": str(e)}, "confidence": 20.0}
+            # 写缓存
+            if _cache_enabled() and _Path(output_path).exists():
+                try:
+                    import shutil as _shutil
+                    _shutil.copy2(output_path, _cache_mp4)
+                except OSError:
+                    pass
 
         expected_duration = sum(s.get("actual_duration", 3.0) for s in segments) + 2.0
         result = validate_video(output_path, expected_duration=expected_duration)

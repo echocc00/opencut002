@@ -37,7 +37,7 @@ def _load_detector():
     try:
         import cv2
         if _MODEL_PATH.exists():
-            det = cv2.FaceDetectorYN.create(str(_MODEL_PATH), "", (320, 320), score_threshold=0.6)
+            det = cv2.FaceDetectorYN.create(str(_MODEL_PATH), "", (320, 320), score_threshold=0.4)
             _detector = ("yunet", det)
             log.info("人脸检测: YuNet")
             return _detector

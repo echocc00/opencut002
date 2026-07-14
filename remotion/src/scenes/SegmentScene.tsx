@@ -19,38 +19,32 @@ export const SegmentScene: React.FC<{
   theme: ThemeConfig;
   segmentIndex: number;
   segmentDuration: number;
-  continuation?: boolean;
-}> = ({ image, subtitle, transition, theme, segmentIndex, segmentDuration, continuation = false }) => {
+}> = ({ image, subtitle, transition, theme, segmentIndex, segmentDuration }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
   const segFrames = Math.round(segmentDuration * fps);
-  // continuation（同段落连续块）：跳过入场/退场 + 静止运镜，避免块间闪烁/跳变
-  const motion = continuation
-    ? { scale: 1, translateX: 0, translateY: 0 }
-    : useCameraMotion(pickCameraMotion(segmentIndex), frame, segFrames);
+  const motion = useCameraMotion(pickCameraMotion(segmentIndex), frame, segFrames);
 
-  // 入场动画（continuation 跳过）
-  const enterScale = continuation ? 1 : spring({ frame, fps, config: theme.enterSpring });
-  const enterOpacity = continuation ? 1 : interpolate(frame, [0, 6], [0, 1], { extrapolateRight: "clamp" });
+  // 入场动画
+  const enterScale = spring({ frame, fps, config: theme.enterSpring });
+  const enterOpacity = interpolate(frame, [0, 6], [0, 1], { extrapolateRight: "clamp" });
 
-  // 退出淡出（continuation 跳过）
+  // 退出淡出
   const fadeOutStart = durationInFrames - 8;
-  const exitOpacity = continuation ? 1 : interpolate(
+  const exitOpacity = interpolate(
     frame, [fadeOutStart, durationInFrames], [1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
-  // transition入场效果（continuation 跳过）
+  // transition入场效果
   let enterTransform = `scale(${enterScale})`;
-  if (!continuation) {
-    if (transition === "slide" || transition === "slide_left") {
-      const slideX = interpolate(frame, [0, 8], [-80, 0], { extrapolateRight: "clamp" });
-      enterTransform = `translateX(${slideX}px) scale(${enterScale})`;
-    } else if (transition === "slide_right") {
-      const slideX = interpolate(frame, [0, 8], [80, 0], { extrapolateRight: "clamp" });
-      enterTransform = `translateX(${slideX}px) scale(${enterScale})`;
-    }
+  if (transition === "slide" || transition === "slide_left") {
+    const slideX = interpolate(frame, [0, 8], [-80, 0], { extrapolateRight: "clamp" });
+    enterTransform = `translateX(${slideX}px) scale(${enterScale})`;
+  } else if (transition === "slide_right") {
+    const slideX = interpolate(frame, [0, 8], [80, 0], { extrapolateRight: "clamp" });
+    enterTransform = `translateX(${slideX}px) scale(${enterScale})`;
   }
 
   const opacity = enterOpacity * exitOpacity;
@@ -98,7 +92,6 @@ export const SegmentScene: React.FC<{
       <WordByWordSubtitle
         text={subtitle || ""}
         springConfig={theme.captionSpring}
-        continuation={continuation}
       />
     </AbsoluteFill>
   );

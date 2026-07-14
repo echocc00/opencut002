@@ -139,8 +139,13 @@ class TTSAgent(BaseStageAgent):
                 continue
             emotion = _map_emotion(p.get("emotion_tone", ""))
             seg_path = f"{audio_dir}/voice_{i}.mp3"
+            # TTS 输入：内部句号 。换成逗号 ，（短停顿 0.27s vs 句号 0.79s），保留末尾 。作段落结束
+            # 字幕文本不变（仍显示原 。），仅影响配音语流
+            tts_text = text.replace("。", "，")
+            if text.endswith("。"):
+                tts_text = tts_text[:-1] + "。"
             try:
-                await generate_tts(text, voice_key, seg_path, emotion=emotion)
+                await generate_tts(tts_text, voice_key, seg_path, emotion=emotion)
             except Exception as e:
                 log.error(f"TTS 段 {i} 失败: {e}")
                 return {"data": {"audio_path": "", "error": str(e),

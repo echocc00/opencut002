@@ -2,6 +2,7 @@ import { AbsoluteFill, Sequence, useVideoConfig } from "remotion";
 import { TitleScene } from "./scenes/TitleScene";
 import { SegmentScene } from "./scenes/SegmentScene";
 import { CoverScene } from "./scenes/CoverScene";
+import { TextCardScene } from "./scenes/TextCardScene";
 import { Soundtrack } from "./components/Soundtrack";
 import { AiLabel } from "./components/AiLabel";
 import { resolveTheme } from "./theme";
@@ -13,6 +14,7 @@ interface SegmentData {
   subtitle: string;
   transition: string;
   subtitleWords: { word: string; start: number; end: number }[];
+  textCard?: boolean;
 }
 
 interface VideoData {
@@ -50,14 +52,18 @@ export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
         const durationFrames = Math.round(seg.actualDuration * fps);
         return (
           <Sequence key={i} from={startFrame} durationInFrames={durationFrames}>
-            <SegmentScene
-              image={seg.image}
-              subtitle={seg.subtitle}
-              transition={seg.transition}
-              theme={theme}
-              segmentIndex={i}
-              segmentDuration={seg.actualDuration}
-            />
+            {seg.textCard ? (
+              <TextCardScene text={seg.subtitle} theme={theme} />
+            ) : (
+              <SegmentScene
+                image={seg.image}
+                subtitle={seg.subtitle}
+                transition={seg.transition}
+                theme={theme}
+                segmentIndex={i}
+                segmentDuration={seg.actualDuration}
+              />
+            )}
           </Sequence>
         );
       })}

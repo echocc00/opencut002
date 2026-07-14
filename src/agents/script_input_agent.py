@@ -67,7 +67,7 @@ def structure_script(text: str, max_chars: int = _MAX_PARAGRAPH_CHARS) -> list[d
             "text": p,
             "target_duration": round(len(p) / _CHARS_PER_SEC, 1),
             "image_hint": "",
-            "highlight_ref": "",
+            "highlight_ref": "script",  # script 模式无亮点，占位非空过 postflight 完整性校验
             "emotion_tone": "neutral",
         }
         for p in paragraphs

@@ -40,7 +40,7 @@ def test_structure_script_assigns_defaults():
     assert len(paras) == 1
     p = paras[0]
     assert p["image_hint"] == ""
-    assert p["highlight_ref"] == ""
+    assert p["highlight_ref"] == "script"  # 占位非空过 postflight 校验
     assert p["emotion_tone"] == "neutral"
     assert p["target_duration"] > 0
 

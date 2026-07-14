@@ -42,7 +42,7 @@ async def generate_image(paragraph_text: str, ma_output: dict,
 
     async with httpx.AsyncClient(timeout=120) as client:
         r = await client.post(
-            f"{_MINIMAX_API_BASE}/v1/image/generation",
+            f"{_MINIMAX_API_BASE}/v1/image_generation",
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json=body,
         )

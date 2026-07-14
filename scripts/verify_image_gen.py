@@ -34,7 +34,7 @@ async def test_raw_api():
     print(f"[1] POST /v1/image/generation  model=image-01")
     async with httpx.AsyncClient(timeout=120) as client:
         r = await client.post(
-            "https://api.minimaxi.com/v1/image/generation",
+            "https://api.minimaxi.com/v1/image_generation",
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json=body,
         )

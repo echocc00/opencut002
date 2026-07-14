@@ -57,14 +57,17 @@ class ImageMatchingAgent(BaseStageAgent):
         paragraphs = cw_output.get("paragraphs", [])
         images = ma_output.get("images", [])
 
-        # AI 匹配 + 打分
+        # AI 匹配 + 打分（候选过滤到已注册 provider，避免 selector 选到未注册的）
         ai_complete = None
         try:
-            from ..providers.provider_registry import get_provider
+            from ..providers.provider_registry import get_provider, list_providers
             from ..providers.selector import ProviderSelector
-            selector = ProviderSelector()
-            sel = selector.select(TaskType.GENERAL, ["deepseek", "doubao", "qwen", "minimax"])
-            ai_complete = get_provider(sel.winner).complete
+            registered = list_providers()
+            candidates = [p for p in ["minimax", "deepseek", "doubao", "qwen"] if p in registered]
+            if candidates:
+                selector = ProviderSelector()
+                sel = selector.select(TaskType.GENERAL, candidates)
+                ai_complete = get_provider(sel.winner).complete
         except Exception:
             pass
 

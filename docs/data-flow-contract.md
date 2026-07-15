@@ -46,6 +46,7 @@
 | actual_duration | actualDuration | render_data 构建时转换 |
 | time_start | timeStart | render_data 构建时转换 |
 | subtitle_words | subtitleWords | render_data 构建时转换 |
+| subtitle_lines | subtitleLines | render_data 构建时转换（OPENCUT_FORCED_ALIGN 开启时） |
 | voice_path | voicePath | build_render_data 参数 |
 | bgm_path | bgmPath | build_render_data 参数 |
 | bgm_volume | bgmVolume | build_render_data 参数 |
@@ -60,6 +61,22 @@
 | word | word | 词文本 |
 | start | start | 开始时间（秒，段内相对时间） |
 | end | end | 结束时间（秒，段内相对时间） |
+
+### subtitleLines 子字段（v0.6.0+，OPENCUT_FORCED_ALIGN 开启时）
+
+由 `RenderAgent._chunk_subtitle_lines` 从 subtitle_words 按标点+≤16 字打包生成。
+
+| Python 字段名 | TypeScript 字段名 | 说明 |
+|--------------|------------------|------|
+| text | text | 行文本（≤16 字，含标点） |
+| start | start | 行首字开始时间（秒，段内相对时间） |
+| end | end | 行尾字结束时间（秒，段内相对时间） |
+
+### 字幕渲染模式
+
+- `subtitleLines` 存在（forced align 成功段）：`WordByWordSubtitle.tsx` 按段内时间找当前行，interpolate 淡入(0.15s)/淡出(0.1s)
+- `subtitleLines` 缺失（默认 / align 失败段）：整段 spring 淡入（fallback）
+- 由 `WordByWordSubtitle.tsx` 根据 `subtitleLines` prop 是否存在自动选择模式
 
 ### 转换规则
 

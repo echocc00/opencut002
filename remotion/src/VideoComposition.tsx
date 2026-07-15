@@ -14,6 +14,7 @@ interface SegmentData {
   subtitle: string;
   transition: string;
   subtitleWords: { word: string; start: number; end: number }[];
+  subtitleLines?: { text: string; start: number; end: number }[];
   textCard?: boolean;
 }
 
@@ -62,6 +63,7 @@ export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
                 theme={theme}
                 segmentIndex={i}
                 segmentDuration={seg.actualDuration}
+                subtitleLines={seg.subtitleLines}
               />
             )}
           </Sequence>

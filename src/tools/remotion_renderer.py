@@ -131,6 +131,7 @@ class RemotionRenderer:
                 if k == "actual_duration": camel_key = "actualDuration"
                 elif k == "time_start": camel_key = "timeStart"
                 elif k == "subtitle_words": camel_key = "subtitleWords"
+                elif k == "subtitle_lines": camel_key = "subtitleLines"
                 elif k == "transition_duration": camel_key = "transitionDuration"
                 elif k == "text_card": camel_key = "textCard"
                 else: camel_key = k

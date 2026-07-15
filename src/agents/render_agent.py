@@ -59,6 +59,16 @@ class RenderAgent(BaseStageAgent):
         paragraph_timing = tts_output.get("paragraph_timing", []) if tts_output else []
         segments = self._build_paragraph_segments(paragraph_timing, matches, sb_segments, text_cards)
 
+        # A1/A2: forced align 成功的段注入 subtitle_lines（逐行进度字幕）
+        aligned_segments = set(tts_output.get("aligned_segments", [])) if tts_output else set()
+        if aligned_segments and word_timestamps:
+            segments = self._merge_word_timestamps(segments, word_timestamps)
+            for seg in segments:
+                if seg.get("index") in aligned_segments and seg.get("subtitle_words"):
+                    seg["subtitle_lines"] = self._chunk_subtitle_lines(
+                        seg["subtitle_words"], seg.get("subtitle", ""))
+                seg.pop("subtitle_words", None)  # 用完即删（不传给 Remotion）
+
         # 从领域配置读取style并注入
         from ..config import get_domain_config, get_settings
         try:
@@ -185,7 +195,7 @@ class RenderAgent(BaseStageAgent):
         }
 
     def _merge_word_timestamps(self, segments: list[dict], word_timestamps: list[dict]) -> list[dict]:
-        """将全局 word_timestamps 按时间段分配到各 segment（旧逻辑，保留兼容）"""
+        """将全局 word_timestamps 按时间段分配到各 segment（全局->段内相对时间）"""
         merged = []
         for seg in segments:
             seg_start = seg.get("time_start", 0.0)
@@ -199,6 +209,78 @@ class RenderAgent(BaseStageAgent):
             merged_seg["subtitle_words"] = seg_words
             merged.append(merged_seg)
         return merged
+
+    @staticmethod
+    def _chunk_subtitle_lines(seg_words: list[dict], full_text: str,
+                              max_chars: int = 16) -> list[dict]:
+        """把段内逐字时间戳 + 原文打包成 <=max_chars 的字幕行。
+
+        seg_words: [{word,start,end}]（段内相对秒，仅汉字，forced align 输出）
+        full_text: 原文（含标点）。先按标点切短语+超长硬切 max_chars，再为每行
+        找首尾汉字在 seg_words 的时间戳 -> {text,start,end}。汉字数不匹配回退均分。
+        """
+        if not seg_words or not full_text:
+            return []
+
+        PHRASE_BREAK = set("。！？!?\n，、；;：…")
+        # 1. 原文按标点切短语，每短语独立成行（标点必断），超 max_chars 硬切
+        phrases: list[str] = []
+        cur = ""
+        for ch in full_text:
+            cur += ch
+            if ch in PHRASE_BREAK:
+                phrases.append(cur)
+                cur = ""
+        if cur:
+            phrases.append(cur)
+
+        lines_text: list[str] = []
+        for p in phrases:
+            p = p.strip()
+            if not p:
+                continue
+            if len(p) <= max_chars:
+                lines_text.append(p)
+            else:
+                # 超长无标点短语硬切
+                for i in range(0, len(p), max_chars):
+                    lines_text.append(p[i:i + max_chars].strip())
+
+        # 2. 汉字在原文中的位置 -> 对应 seg_words 索引（顺序一致）
+        hanzi_pos = [i for i, c in enumerate(full_text) if "一" <= c <= "鿿"]
+        if len(hanzi_pos) != len(seg_words):
+            log.warning(f"汉字数不匹配（text={len(hanzi_pos)} align={len(seg_words)}），回退均分")
+            seg_start = seg_words[0]["start"] if seg_words else 0
+            seg_end = seg_words[-1]["end"] if seg_words else 0
+            if not lines_text:
+                return []
+            per = (seg_end - seg_start) / len(lines_text)
+            return [{"text": t, "start": round(seg_start + i * per, 3),
+                     "end": round(seg_start + (i + 1) * per, 3)} for i, t in enumerate(lines_text)]
+
+        # 3. 每行找首尾汉字 -> 时间戳
+        result = []
+        search_pos = 0
+        for line_text in lines_text:
+            start_pos = full_text.find(line_text, search_pos)
+            if start_pos < 0:
+                continue
+            end_pos = start_pos + len(line_text)
+            search_pos = end_pos
+            first_wi = None
+            last_wi = None
+            for j, tp in enumerate(hanzi_pos):
+                if start_pos <= tp < end_pos:
+                    if first_wi is None:
+                        first_wi = j
+                    last_wi = j
+            if first_wi is not None and last_wi is not None:
+                result.append({
+                    "text": line_text,
+                    "start": round(seg_words[first_wi]["start"], 3),
+                    "end": round(seg_words[last_wi]["end"], 3),
+                })
+        return result
 
     def _build_paragraph_segments(self, paragraph_timing: list[dict],
                                   matches: dict, sb_segments: list[dict],

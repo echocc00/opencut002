@@ -19,7 +19,8 @@ export const SegmentScene: React.FC<{
   theme: ThemeConfig;
   segmentIndex: number;
   segmentDuration: number;
-}> = ({ image, subtitle, transition, theme, segmentIndex, segmentDuration }) => {
+  subtitleLines?: { text: string; start: number; end: number }[];
+}> = ({ image, subtitle, transition, theme, segmentIndex, segmentDuration, subtitleLines }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -92,6 +93,7 @@ export const SegmentScene: React.FC<{
       <WordByWordSubtitle
         text={subtitle || ""}
         springConfig={theme.captionSpring}
+        subtitleLines={subtitleLines}
       />
     </AbsoluteFill>
   );

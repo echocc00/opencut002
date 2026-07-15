@@ -182,10 +182,13 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
    角标（`remotion/src/components/AiLabel.tsx`）。国内《AI内容标识办法》2025-09-01 生效后
    B2C 公网上线需开启；B2B 私有化部署可不开。`render_agent._ai_label_enabled()` 读环境变量。
 
-10. **字幕整段淡入**：`WordByWordSubtitle.tsx` 整段文案一起淡入显示（spring opacity + 上移），
-    42px 多行。段级同步（1 段文案 = 1 段 TTS = 1 个分镜段），无段内 desync。
-    ≤16 单行 + 精确同步需强制对齐（forced alignment，后续加），chunk-per-segment/even-split
-    均已验证失败（破坏语流/漂移），已回退。
+10. **字幕同步（v0.6.0+）**：默认整段淡入（spring opacity + 上移），42px 多行，段级同步。
+    设 `OPENCUT_FORCED_ALIGN=1` 开启逐行进度字幕：wav2vec2 CTC 强制对齐获取真实逐字时间戳
+    （`src/tools/forced_align.py`），按标点+≤16 字打包成行（`render_agent._chunk_subtitle_lines`），
+    `WordByWordSubtitle.tsx` 按段内时间逐行 interpolate 淡入/淡出。需装 `[align]` extras
+    （torch+torchaudio+transformers），首次下 ~1.2GB 模型（HuggingFace，需代理）。失败逐段回退整段淡入。
+    chunk-per-segment/jieba/even-split 均已验证失败（破坏语流/漂移），已回退 -- 本方案不切 TTS、
+    不用 jieba、不造时间戳，wav2vec2 从音频测真实时间。
 
 11. **人脸遮盖（opt-in，默认关）**：设 `OPENCUT_FACE_MASK=1` 开启。`src/tools/face_masker.py`
     用 opencv YuNet 检测素材图所有人脸，可爱贴纸（`src/tools/stickers/*.png`，openmoji）bake 进图，
@@ -224,6 +227,18 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
 
 16. **Remotion 渲染并发（v0.5.2+）**：`OPENCUT_RENDER_CONCURRENCY` env 控制 `--concurrency`
     参数（默认 1）。多核机器设 2-4 可加速渲染。`RemotionRenderer.__init__(concurrency=...)` 也可显式传。
+
+17. **TTS 静音裁剪 opt-in（v0.6.0+）**：`OPENCUT_TRIM_SILENCE=1` 开启 `tts_agent._trim_silence`
+    （revived from 9d70abc），ffmpeg `silenceremove` 去每段 TTS 头尾静音。零依赖（仅 ffmpeg）。
+    修段落级音字不同步（字幕显示满段但音频说完后静音）+ 拼接缝（段尾静音被切，concat 无缝）。
+    与 #18 forced align 独立，可单开。
+
+18. **强制对齐 opt-in（v0.6.0+）**：`OPENCUT_FORCED_ALIGN=1` 开启 wav2vec2 CTC 强制对齐
+    （`src/tools/forced_align.py`），替代 `tts_agent` 里 `char_dur=dur/len` 造假时间戳。
+    模型 `jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn`（中文每字一 token）。
+    依赖 `[align]` extras（torch+torchaudio+transformers，非 whisperx 包）。首次下 ~1.2GB（需代理）。
+    失败逐段回退造假 + 整段淡入，不崩。详见 #10。`_filter_chars` 只留汉字，标点/数字/英文无时间戳
+    （字幕行按汉字时间戳对齐，标点随相邻汉字）。
 
 ## Agent 操作守则
 

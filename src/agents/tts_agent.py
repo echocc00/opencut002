@@ -44,6 +44,35 @@ def _concat_audio(seg_paths: list[str], output: str) -> None:
     os.remove(list_file)
 
 
+def _trim_silence(path: str) -> None:
+    """去头尾静音（minimax TTS 每段带头尾静音，致字幕音频不同步）。
+
+    ffmpeg silenceremove 去头静音 + areverse 去尾静音。原地替换，失败则保留原文件。
+    opt-in（OPENCUT_TRIM_SILENCE=1）。revived from 9d70abc。
+    """
+    import os as _os
+    tmp = path + ".trimmed.mp3"
+    r = subprocess.run(
+        ["ffmpeg", "-y", "-i", path,
+         "-af", "silenceremove=start_periods=1:start_duration=0.05:start_threshold=-40dB,"
+                 "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-40dB,areverse",
+         tmp],
+        capture_output=True, timeout=30,
+    )
+    if r.returncode == 0 and _os.path.exists(tmp) and _os.path.getsize(tmp) > 0:
+        _os.replace(tmp, path)
+
+
+def _trim_silence_enabled() -> bool:
+    import os as _os
+    return _os.environ.get("OPENCUT_TRIM_SILENCE", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _forced_align_enabled() -> bool:
+    import os as _os
+    return _os.environ.get("OPENCUT_FORCED_ALIGN", "").strip().lower() in ("1", "true", "yes", "on")
+
+
 # 文案 emotion_tone 描述 -> minimax TTS emotion 取值
 # minimax 支持: happy/sad/angry/fearful/disgusted/surprised/neutral
 EMOTION_TONE_TO_MINIMAX = {
@@ -105,7 +134,8 @@ class TTSAgent(BaseStageAgent):
         voice_output = state.get_stage_output("voice_selection")
 
         if not cw_output:
-            return {"data": {"audio_path": "", "word_timestamps": [], "paragraph_timing": []},
+            return {"data": {"audio_path": "", "word_timestamps": [], "paragraph_timing": [],
+                             "aligned_segments": []},
                     "confidence": 20.0}
 
         paragraphs = cw_output.get("paragraphs", [])
@@ -130,6 +160,7 @@ class TTSAgent(BaseStageAgent):
         seg_paths: list[str] = []
         paragraph_timing: list[dict] = []
         word_timestamps: list[dict] = []
+        aligned_segments: set[int] = set()
         t = 0.0
 
         # 逐段 TTS
@@ -152,27 +183,48 @@ class TTSAgent(BaseStageAgent):
             except Exception as e:
                 log.error(f"TTS 段 {i} 失败: {e}")
                 return {"data": {"audio_path": "", "error": str(e),
-                                 "paragraph_timing": [], "word_timestamps": []},
+                                 "paragraph_timing": [], "word_timestamps": [],
+                                 "aligned_segments": []},
                         "confidence": 20.0}
+            # A3: 去头尾静音（opt-in），段时长=纯语音，顺带修拼接缝
+            if _trim_silence_enabled():
+                _trim_silence(seg_path)
             dur = _probe_duration(seg_path)
             seg_paths.append(seg_path)
             paragraph_timing.append({
                 "index": i, "start": round(t, 3), "end": round(t + dur, 3),
                 "duration": round(dur, 3), "text": text,
             })
-            # 词级时间戳：该段字符均匀分布在段时长内（绝对时间，供兼容用）
-            chars = list(text.replace(" ", "").replace("\n", ""))
-            char_dur = dur / len(chars) if chars else 0
-            for j, c in enumerate(chars):
-                word_timestamps.append({
-                    "word": c,
-                    "start": round(t + j * char_dur, 3),
-                    "end": round(t + (j + 1) * char_dur, 3),
-                })
+            # 词级时间戳：OPENCUT_FORCED_ALIGN=1 用 wav2vec2 真实对齐，否则造假均分
+            real_aligned = False
+            if _forced_align_enabled():
+                from ..tools.forced_align import align_chars
+                aligned = align_chars(seg_path, text)
+                if aligned is not None:
+                    for ci in aligned:
+                        word_timestamps.append({
+                            "word": ci["char"],
+                            "start": round(t + ci["start"], 3),
+                            "end": round(t + ci["end"], 3),
+                        })
+                    aligned_segments.add(i)
+                    real_aligned = True
+                else:
+                    log.warning(f"段 {i} forced align 失败，回退均分时间戳")
+            if not real_aligned:
+                chars = list(text.replace(" ", "").replace("\n", ""))
+                char_dur = dur / len(chars) if chars else 0
+                for j, c in enumerate(chars):
+                    word_timestamps.append({
+                        "word": c,
+                        "start": round(t + j * char_dur, 3),
+                        "end": round(t + (j + 1) * char_dur, 3),
+                    })
             t += dur
 
         if not seg_paths:
-            return {"data": {"audio_path": "", "paragraph_timing": [], "word_timestamps": []},
+            return {"data": {"audio_path": "", "paragraph_timing": [], "word_timestamps": [],
+                             "aligned_segments": []},
                     "confidence": 20.0}
 
         # 拼接成完整音频
@@ -182,7 +234,8 @@ class TTSAgent(BaseStageAgent):
         except Exception as e:
             log.error(f"音频拼接失败: {e}")
             return {"data": {"audio_path": "", "error": str(e),
-                             "paragraph_timing": paragraph_timing, "word_timestamps": []},
+                             "paragraph_timing": paragraph_timing, "word_timestamps": [],
+                             "aligned_segments": []},
                     "confidence": 20.0}
 
         full_text = " ".join(p.get("text", "") for p in paragraphs)
@@ -193,6 +246,7 @@ class TTSAgent(BaseStageAgent):
                 "paragraph_timing": paragraph_timing,
                 "full_text": full_text,
                 "transcribe_method": "tts-per-paragraph",
+                "aligned_segments": sorted(aligned_segments),
             },
             "confidence": 80.0,
         }

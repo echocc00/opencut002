@@ -1,6 +1,6 @@
 [project]
 name = "opencut-v3"
-version = "0.5.2"
+version = "0.6.0"
 description = "AI-driven multi-domain short video production platform"
 requires-python = ">=3.10"
 dependencies = [
@@ -23,7 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "pytest-cov>=5.0"]
-gpu = ["whisperx>=3.1"]
+align = ["torch>2.0", "torchaudio>2.0", "transformers>4.30"]
 face = ["opencv-python>=4.8", "Pillow>=10.0"]
 
 [tool.pytest.ini_options]

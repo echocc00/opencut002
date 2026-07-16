@@ -150,13 +150,9 @@ class BaseStageAgent(ABC):
         raise last_err
 
     def _extract_json(self, text: str) -> dict:
-        match = re.search(r"\{[\s\S]*\}", text)
-        if match:
-            try:
-                return json.loads(match.group())
-            except json.JSONDecodeError:
-                pass
-        return {}
+        # v0.6.1: 用共享的字符串感知括号深度提取（修旧版贪婪 regex 遇嵌套/字符串内大括号丢响应的 bug）
+        from ..utils.json_extract import extract_json_object
+        return extract_json_object(text)
 
     def _flatten_plan_namespace(self, data: dict) -> dict:
         """展平 AI 习惯性包在 xxx_plan 字段里的命名空间（如 rhythm_plan -> 顶层）。

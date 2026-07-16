@@ -6,12 +6,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .. import __version__
+from .health import router as health_router
 from .panel_routes import router as panel_router
 from .project_routes import router as project_router
 
 load_dotenv()
 
-app = FastAPI(title="OpenCut v3.0", version="0.4.0")
+app = FastAPI(title="OpenCut v3.0", version=__version__)
 
 # CORS：生产环境用 OPENCUT_CORS_ORIGINS 设置白名单（逗号分隔）；未设置时默认放开（仅开发用）
 _cors_env = os.environ.get("OPENCUT_CORS_ORIGINS", "").split(",")
@@ -22,12 +24,14 @@ app.add_middleware(
     allow_origins=allow_origins,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
+app.include_router(health_router)
 app.include_router(panel_router)
 app.include_router(project_router)
 
 
 @app.get("/")
 async def root():
-    return {"name": "OpenCut v3.0", "version": "0.4.0", "status": "running"}
+    return {"name": "OpenCut v3.0", "version": __version__, "status": "running"}

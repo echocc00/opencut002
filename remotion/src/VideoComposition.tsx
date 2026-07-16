@@ -16,6 +16,11 @@ interface SegmentData {
   subtitleWords: { word: string; start: number; end: number }[];
   subtitleLines?: { text: string; start: number; end: number }[];
   textCard?: boolean;
+  // v0.6.1 屏级字幕切分：一段拆 N 屏，每屏自己的图 + Ken Burns
+  screenIndex?: number;
+  screensTotal?: number;
+  audioStart?: number;
+  audioDuration?: number;
 }
 
 interface VideoData {
@@ -64,6 +69,8 @@ export const VideoComposition: React.FC<{ data: VideoData }> = ({ data }) => {
                 segmentIndex={i}
                 segmentDuration={seg.actualDuration}
                 subtitleLines={seg.subtitleLines}
+                screenIndex={seg.screenIndex ?? 0}
+                screensTotal={seg.screensTotal ?? 1}
               />
             )}
           </Sequence>

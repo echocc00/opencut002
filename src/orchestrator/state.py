@@ -41,6 +41,7 @@ class ProjectState(BaseModel):
     domain: str = "travel"
     approval_mode: str = "manual"
     mode: str = "material"  # material / reference
+    schema_version: int = 2  # v0.6.1: state schema 版本（2=当前，旧文件 load 时自动迁移）
     reference_url: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     materials: list[dict[str, Any]] = Field(default_factory=list)
@@ -86,11 +87,18 @@ class ProjectState(BaseModel):
     def save(self, data_dir: Path):
         path = data_dir / "projects" / self.project_id / "state.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(self.model_dump_json(indent=2), encoding="utf-8")
+        # 原子写（tmp + rename）：防半新半旧 state.json
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_text(self.model_dump_json(indent=2), encoding="utf-8")
+        tmp.replace(path)
 
     @classmethod
     def load(cls, data_dir: Path, project_id: str) -> Optional[ProjectState]:
         path = data_dir / "projects" / project_id / "state.json"
         if path.exists():
-            return cls.model_validate_json(path.read_text(encoding="utf-8"))
+            # v0.6.1: 先跑 schema 迁移再 pydantic 校验（旧 v1 文件自动补 schema_version 等）
+            from .state_migrator import migrate_state, _load_json_safely
+            data = _load_json_safely(path)
+            data, _ = migrate_state(data)
+            return cls.model_validate(data)
         return None

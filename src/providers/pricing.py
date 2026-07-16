@@ -25,3 +25,10 @@ def calc_cost(input_tokens: int, output_tokens: int, provider: str) -> float:
     in_cost = input_tokens / 1000 * p.get("input_per_1k", 0.0)
     out_cost = output_tokens / 1000 * p.get("output_per_1k", 0.0)
     return round(in_cost + out_cost, 6)
+
+
+def calc_tts_cost(chars: int, provider: str = "minimax_tts") -> float:
+    """计算 TTS 成本（美元，按字符，v0.6.2）。无定价信息返回 0。"""
+    pricing = load_pricing()
+    p = pricing.get(provider, {})
+    return round(chars / 1000 * p.get("per_1k_chars", 0.0), 6)

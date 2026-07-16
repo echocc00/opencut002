@@ -22,7 +22,7 @@ from typing import Any, Callable, Optional
 log = logging.getLogger(__name__)
 
 
-CURRENT_VERSION = 2
+CURRENT_VERSION = 3
 
 # state.json 最大允许大小（10MB），超了拒绝加载（防资源耗尽）
 _MAX_STATE_BYTES = 10 * 1024 * 1024
@@ -49,9 +49,16 @@ def _v1_to_v2(data: dict) -> dict:
     return data
 
 
+def _v2_to_v3(data: dict) -> dict:
+    """v2 -> v3：加 budget_usd（v0.6.2 成本预算闸）。setdefault 不覆盖用户数据。"""
+    data["schema_version"] = 3
+    data.setdefault("budget_usd", 0.0)
+    return data
+
+
 MIGRATIONS: dict[int, Callable[[dict], dict]] = {
     1: _v1_to_v2,
-    # 未来：2: _v2_to_v3, ...
+    2: _v2_to_v3,
 }
 
 

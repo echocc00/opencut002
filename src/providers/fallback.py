@@ -131,3 +131,24 @@ async def get_provider_with_fallback(
     return await call_with_fallback(
         prompt=prompt, providers=providers, images=images, max_tokens=max_tokens,
     )
+
+
+async def call_tool_with_fallback(tool_fn, fallback_fns: list, **kwargs: Any):
+    """工具级故障转移（v0.6.2，区别于 provider 级 call_with_fallback）。
+
+    tool_fn 失败（瞬时）-> 按序试 fallback_fns；永久错误（auth/坏请求）直 raise。
+    全 async、同 kwargs、返同类型。复用 _is_transient_error 分类。
+    无 tool registry（OpenCut 工具直接 import 调用），故 fallback 链作为参数传入。
+    """
+    all_fns = [tool_fn] + list(fallback_fns)
+    last_error: Exception | None = None
+    for fn in all_fns:
+        try:
+            return await fn(**kwargs)
+        except Exception as e:
+            last_error = e
+            if not _is_transient_error(e):
+                log.error(f"tool {fn.__name__} 永久错误: {e}，不 fallback")
+                raise
+            log.warning(f"tool {fn.__name__} 瞬时错误: {e}，试下一个")
+    raise RuntimeError(f"全部 {len(all_fns)} 个 tool 失败，最后错误: {last_error}")

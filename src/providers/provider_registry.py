@@ -2,8 +2,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 import httpx
+
+
+class ToolRuntime(str, Enum):
+    """Provider/工具运行时分类（v0.6.2）。调度层可按硬件选最便宜路径。"""
+    LOCAL = "local"          # 纯本地 CPU（face_masker / auto_reframe）
+    LOCAL_GPU = "local_gpu"  # 本地 GPU（forced_align）
+    API = "api"              # 云端 API（minimax / doubao LLM/TTS）
+    HYBRID = "hybrid"        # 可切换（如 TTS: minimax API 或 cosyvoice 本地）
 
 
 @dataclass
@@ -16,9 +25,11 @@ class ProviderResponse:
 
 
 class Provider:
-    def __init__(self, name: str, complete_fn=None):
+    def __init__(self, name: str, complete_fn=None,
+                 runtime: ToolRuntime = ToolRuntime.API):
         self.name = name
         self._complete_fn = complete_fn
+        self.runtime = runtime
 
     async def complete(self, prompt: str, **kwargs: Any) -> ProviderResponse:
         if self._complete_fn:
@@ -181,6 +192,11 @@ def auto_register_from_env() -> list[str]:
 def list_providers() -> list[str]:
     """返回已注册的 provider 名列表"""
     return list(_registry.keys())
+
+
+def list_providers_by_runtime(runtime: ToolRuntime) -> list[str]:
+    """返回指定 runtime 的已注册 provider 名（v0.6.2）。"""
+    return [name for name, p in _registry.items() if p.runtime == runtime]
 
 
 # OpenAI 兼容 provider 的默认 api_base / model（DB key 未填时兜底）

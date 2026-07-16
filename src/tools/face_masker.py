@@ -14,7 +14,12 @@ import os
 import random
 from pathlib import Path
 
+from ..providers.provider_registry import ToolRuntime
+
 log = logging.getLogger(__name__)
+
+# 运行时分类（v0.6.2）：纯本地 CPU（opencv YuNet）
+RUNTIME: ToolRuntime = ToolRuntime.LOCAL
 
 _HERE = Path(__file__).resolve().parent
 _MODEL_PATH = _HERE / "models" / "yunet.onnx"

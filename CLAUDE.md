@@ -264,6 +264,24 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     - `config` 领域缓存 TTL（`OPENCUT_DOMAIN_CACHE_TTL` 默认 60s）+ `clear_domain_cache`。
     - `.github/workflows/ci.yml`：test 矩阵(3.10/3.11/3.12) + 稳定性 + Remotion tsc + health 冒烟。
 
+21. **ToolRuntime 分类（v0.6.2）**：`provider_registry.ToolRuntime`（LOCAL/LOCAL_GPU/API/HYBRID）。
+    `Provider.runtime` 字段（默认 API）+ `list_providers_by_runtime()`。工具模块声明 `RUNTIME` 常量
+    （`forced_align`=LOCAL_GPU、`face_masker`/`auto_reframe`=LOCAL），为调度层选最便宜路径铺路。纯元数据，零行为变化。
+
+22. **成本预算闸（v0.6.2，opt-in）**：`ProjectState.budget_usd`（美元，0=不限默认）+ `cost_tracker.CostTracker.check_budget`。
+    `engine.run` 每阶段执行前 check，超限 raise `BudgetExceeded` -> 标阶段 ERROR + 中止管道（防 API 失控烧钱）。
+    schema v2->v3 迁移（旧 state.json 自动补 budget_usd）。**顺带修 TTS 成本不可见**：`TTSAgent` 现返
+    `state_updates.cost_total`（`calc_tts_cost` 按字符，`config/provider_pricing.yaml` 的 `minimax_tts.per_1k_chars`，rate 未核实=0.0 占位）。
+
+23. **per-tool fallback（v0.6.2）**：`fallback.call_tool_with_fallback(tool_fn, fallback_fns, **kwargs)` 工具级降级
+    （区别于 #20 provider 级 `call_with_fallback`）。瞬时错误按序试 fallback_fns，永久错误（auth/4xx）直 raise。
+    `image_matching_agent` 生图路径已接入（`fallback_fns=[]` 暂空，待加本地 SD 等替代，文字卡兜底保留）。
+
+24. **auto_reframe（v0.6.2，opt-in，默认关）**：`OPENCUT_AUTO_REFRAME=1` 开启。`src/tools/auto_reframe.py`
+    `get_reframed_path` 把横版素材智能裁 9:16（复用 `face_masker.detect_faces` 聚焦人脸质心，无人脸图中），
+    镜像 `get_masked_path` 懒处理模式。`render_agent._stage_asset` 链式：masked -> reframed。
+    material_analysis 见原图。需 `[face]` extras（opencv）；失败/非图返原图，不崩。
+
 ## Agent 操作守则
 
 - **改代码前**：先读 [docs/data-flow-contract.md](docs/data-flow-contract.md) 确认契约；

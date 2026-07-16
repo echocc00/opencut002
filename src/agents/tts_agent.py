@@ -239,6 +239,9 @@ class TTSAgent(BaseStageAgent):
                     "confidence": 20.0}
 
         full_text = " ".join(p.get("text", "") for p in paragraphs)
+        # v0.6.2: TTS 成本（按字符）纳入 state_updates（之前 TTS override 基类不返 state_updates，成本不可见）
+        from ..providers.pricing import calc_tts_cost
+        total_chars = sum(len(p.get("text", "")) for p in paragraphs)
         return {
             "data": {
                 "audio_path": full_path,
@@ -249,6 +252,9 @@ class TTSAgent(BaseStageAgent):
                 "aligned_segments": sorted(aligned_segments),
             },
             "confidence": 80.0,
+            "state_updates": {
+                "cost_total": state.cost_total + calc_tts_cost(total_chars),
+            },
         }
 
     def _build_prompt(self, *a): return ""

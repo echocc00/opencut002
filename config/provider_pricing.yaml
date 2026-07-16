@@ -12,3 +12,8 @@ doubao:
 qwen:
   input_per_1k: 0.002
   output_per_1k: 0.006
+
+# TTS 单价（美元 / 1K 字符），用于成本追踪（v0.6.2）
+# minimax t2a_v2 按字符计费，rate 未核实 -> 0.0 占位（结构对，数值待填实测）
+minimax_tts:
+  per_1k_chars: 0.0

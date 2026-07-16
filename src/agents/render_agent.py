@@ -130,7 +130,9 @@ class RenderAgent(BaseStageAgent):
                 return asset_path
             # 人脸遮盖（opt-in，OPENCUT_FACE_MASK=1）：图片用 masked 副本，非图片返回原图
             from ..tools.face_masker import get_masked_path
+            from ..tools.auto_reframe import get_reframed_path
             staged = _Path(get_masked_path(str(src)))
+            staged = _Path(get_reframed_path(str(staged)))  # v0.6.2 链式：masked -> reframed
             dest = public_dir / staged.name
             # 检测 stale: 不存在、源比 dest 新、或大小不同都视为过期，重拷
             stale = True

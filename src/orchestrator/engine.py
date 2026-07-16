@@ -247,6 +247,17 @@ class PipelineEngine:
             if self.event_store:
                 self.event_store.emit_stage_started(name, stage.input_data)
 
+            # v0.6.2 预算闸：超限中止管道（fail-safe，budget_usd=0 不限）
+            from .cost_tracker import CostTracker, BudgetExceeded
+            try:
+                CostTracker.check_budget(state, stage_name=name)
+            except BudgetExceeded as e:
+                stage.status = StageStatus.ERROR
+                stage.error = f"预算超限: {e}"
+                state.save(self.data_dir)
+                log.error(str(e))
+                return state
+
             try:
                 handler = self.stage_handlers.get(name)
                 if handler:

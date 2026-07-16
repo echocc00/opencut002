@@ -12,7 +12,12 @@ import subprocess
 import tempfile
 from typing import Any
 
+from ..providers.provider_registry import ToolRuntime
+
 log = logging.getLogger(__name__)
+
+# 运行时分类（v0.6.2）：本地 GPU（wav2vec2 模型，CPU 也可跑但慢）
+RUNTIME: ToolRuntime = ToolRuntime.LOCAL_GPU
 
 _MODEL: Any = None
 _PROCESSOR: Any = None

@@ -76,9 +76,9 @@ async def test_gap_gen_when_enabled_and_many(monkeypatch):
 
     gen_called = []
 
-    async def mock_gen(text, ma, pid, idx):
-        gen_called.append(idx)
-        return f"gen_{idx}.jpg"
+    async def mock_gen(paragraph_text, ma_output, project_id, index):
+        gen_called.append(index)
+        return f"gen_{index}.jpg"
 
     with patch("src.agents.image_matching_agent.match_images", new=mock_match), \
          patch("src.tools.image_generator.generate_image", new=mock_gen):
@@ -99,7 +99,7 @@ async def test_gen_failure_falls_back_to_text_card(monkeypatch):
     async def mock_match(p, i, ai):
         return {"0": {"image": "", "score": 0.1}}
 
-    async def mock_gen(*a):
+    async def mock_gen(**kwargs):
         raise RuntimeError("gen fail")
 
     with patch("src.agents.image_matching_agent.match_images", new=mock_match), \

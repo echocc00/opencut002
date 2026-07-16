@@ -41,7 +41,7 @@ class ProjectState(BaseModel):
     domain: str = "travel"
     approval_mode: str = "manual"
     mode: str = "material"  # material / reference
-    schema_version: int = 2  # v0.6.1: state schema 版本（2=当前，旧文件 load 时自动迁移）
+    schema_version: int = 3  # v0.6.2: state schema 版本（3=当前，旧文件 load 时自动迁移）
     reference_url: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     materials: list[dict[str, Any]] = Field(default_factory=list)
@@ -50,6 +50,7 @@ class ProjectState(BaseModel):
     quality_reports: list[dict[str, Any]] = Field(default_factory=list)
     decision_log_path: Optional[str] = None
     cost_total: float = 0.0
+    budget_usd: float = 0.0  # v0.6.2: 预算上限（美元），0=不限；超限 engine 中止管道
     last_provider: str = ""
 
     def get_stage(self, name: str) -> StageState:

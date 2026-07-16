@@ -99,8 +99,12 @@ class ImageMatchingAgent(BaseStageAgent):
                 if do_gen:
                     try:
                         from ..tools.image_generator import generate_image
-                        gen_path = await generate_image(
-                            paragraphs[i].get("text", ""), ma_output, state.project_id, i)
+                        from ..providers.fallback import call_tool_with_fallback
+                        # v0.6.2: per-tool fallback 机制就位（fallback_fns 待加本地 SD 等替代）
+                        gen_path = await call_tool_with_fallback(
+                            generate_image, fallback_fns=[],
+                            paragraph_text=paragraphs[i].get("text", ""),
+                            ma_output=ma_output, project_id=state.project_id, index=i)
                         final_matches[str(i)] = gen_path
                         layer_log.append(f"段落{i}: s={score:.2f} 第3层生图")
                     except Exception as e:

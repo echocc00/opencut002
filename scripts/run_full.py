@@ -27,7 +27,7 @@ from src.tools.material_prep import prepare_materials
 
 async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/materials",
                project_id: str = "edu_test", domain: str = "education",
-               script_file: str | None = None):
+               script_file: str | None = None, pipeline: str | None = None):
     if not auto_register_from_env():
         print("❌ 未配置 Provider：请设置 MINIMAX_API_KEY 环境变量（或保留 ../minimax-key.txt）")
         sys.exit(1)
@@ -44,7 +44,11 @@ async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/
     print(f"✅ {len(materials)}张素材（支持 jpg/jpeg/png + 视频自动抽帧）")
 
     data_dir = Path("data")
-    if script_file:
+    if pipeline:
+        # --pipeline <name>：直接加载 pipelines/<name>.yaml（minimal/draft/topic_first/default/script_first）
+        eng = PipelineEngine(data_dir=data_dir, pipeline_file=f"pipelines/{pipeline}.yaml")
+        mode = f"pipeline={pipeline}"
+    elif script_file:
         eng = PipelineEngine(data_dir=data_dir, pipeline_file="pipelines/script_first.yaml")
         mode = "script-first（文案驱动，跳过选题/亮点/AI 文案）"
     else:
@@ -138,6 +142,10 @@ if __name__ == "__main__":
     parser.add_argument("--domain", default="education", help="领域（travel/education/knowledge_paid/custom）")
     parser.add_argument("--script-file", default=None,
                         help="文案驱动模式：提供文案文件路径，跳过选题/亮点/AI文案，自动匹配素材池")
+    parser.add_argument("--pipeline", default=None,
+                        help="指定 pipeline 变体（minimal/draft/topic_first/default/script_first）。"
+                             "minimal 需配合 --script-file；draft/topic_first 需 --full")
     args = parser.parse_args()
     asyncio.run(main(full=args.full, materials_dir=args.materials_dir,
-                     project_id=args.project_id, domain=args.domain, script_file=args.script_file))
+                     project_id=args.project_id, domain=args.domain,
+                     script_file=args.script_file, pipeline=args.pipeline))

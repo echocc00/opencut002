@@ -43,6 +43,28 @@ python scripts/run_full.py --script-file <文案.txt> \
 - 后续 TTS/分镜/渲染/字幕分块/人脸遮盖全部复用
 - 兜底增强（Pexels 搜图 / AI 生图，opt-in）留扩展点，后续按需加
 
+## Pipeline 变体（v0.6.3+）
+
+`--pipeline <name>` 选管道变体（`pipelines/<name>.yaml`）。跳过的阶段其下游契约要求自动豁免
+（`preflight.check_stage_inputs` 的 `available_stages` 逻辑，同 12 阶段冒烟跳 tts）。
+
+| 变体 | 基础 | 跳过 | 用途 |
+|------|------|------|------|
+| `default` | - | - | 完整 20 阶段（素材驱动，含选题/亮点/AI文案） |
+| `script_first` | default | web_research/topic/highlight | 文案驱动（`--script-file` 给文案） |
+| `minimal` | script_first | + title/cover | 最快出片（需 `--script-file`，无标题/封面） |
+| `draft` | default | opening_review/slideshow_check/pre_render_check | 快草稿（保内容阶段，跳审核门，人工再审） |
+| `topic_first` | default | web_research | 不做热点调研，AI 从素材直接选题（更快，无搜索依赖） |
+
+```bash
+python scripts/run_full.py --pipeline minimal --script-file <文案.txt> --full ...   # 最快出片
+python scripts/run_full.py --pipeline draft --full ...                              # 快草稿
+python scripts/run_full.py --pipeline topic_first --full ...                        # 跳热点调研
+```
+
+注：`topic_first` 的 topic 阶段仍由 AI 生成方向（从素材推断），非用户注入主题。
+用户注入主题需 `--topic` + TopicInputAgent（后续增强）。
+
 ## 环境要求
 
 | 依赖 | 版本 | 用途 |

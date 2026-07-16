@@ -1,0 +1,72 @@
+pipeline:
+  name: draft
+  # default 基础上去掉 3 个质量门（opening_review/slideshow_check/pre_render_check）
+  # -> 快出草稿（保留全部内容阶段 + post_render_check 供 deliver 依赖），人工再审。
+  # 用法：python scripts/run_full.py --pipeline draft --full ...
+  stages:
+    - name: material_analysis
+      type: auto
+      skill: material_analysis
+      requires: []
+    - name: web_research
+      type: auto
+      skill: web_research
+      requires: [material_analysis]
+    - name: topic
+      type: decision
+      skill: topic
+      requires: [material_analysis, web_research]
+    - name: highlight_selection
+      type: decision
+      skill: highlight
+      requires: [topic]
+    - name: copywriting
+      type: decision
+      skill: copywriting
+      requires: [topic, highlight_selection]
+    - name: image_matching
+      type: auto
+      skill: image_matching
+      requires: [copywriting, material_analysis]
+    - name: voice_selection
+      type: decision
+      skill: voice
+      requires: [copywriting]
+    - name: tts
+      type: auto
+      skill: tts
+      requires: [copywriting, voice_selection]
+    - name: storyboard
+      type: decision
+      skill: storyboard
+      requires: [copywriting, image_matching, tts]
+    - name: bgm
+      type: decision
+      skill: bgm
+      requires: [storyboard]
+    - name: rhythm
+      type: auto
+      skill: rhythm
+      requires: [storyboard, bgm]
+    - name: title
+      type: decision
+      skill: title
+      requires: [copywriting]
+    - name: cover
+      type: decision
+      skill: cover
+      requires: [storyboard]
+    - name: fine_cut
+      type: auto
+      skill: fine_cut
+      requires: [storyboard, rhythm]
+    - name: render
+      type: auto
+      skill: render
+      requires: [fine_cut, tts, bgm]
+    - name: post_render_check
+      type: quality_gate_auto
+      requires: [render]
+    - name: deliver
+      type: manual
+      requires: [post_render_check]

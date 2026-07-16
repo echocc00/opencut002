@@ -1,0 +1,62 @@
+pipeline:
+  name: minimal
+  # script_first 基础上去掉 title/cover -> 批量出片省 2 次 LLM，最快出片。
+  # 用法：python scripts/run_full.py --pipeline minimal --script-file <文案.txt> ...
+  # （需 --script-file 提供文案，因跳过选题/亮点/AI文案；无 title/cover 产物）
+  stages:
+    - name: material_analysis
+      type: auto
+      skill: material_analysis
+      requires: []
+    - name: copywriting
+      type: auto
+      skill: copywriting
+      requires: [material_analysis]
+    - name: image_matching
+      type: auto
+      skill: image_matching
+      requires: [copywriting, material_analysis]
+    - name: voice_selection
+      type: decision
+      skill: voice
+      requires: [copywriting]
+    - name: tts
+      type: auto
+      skill: tts
+      requires: [copywriting, voice_selection]
+    - name: storyboard
+      type: decision
+      skill: storyboard
+      requires: [copywriting, image_matching, tts]
+    - name: opening_review
+      type: quality_gate
+      skill: opening_review
+      requires: [storyboard]
+    - name: slideshow_check
+      type: quality_gate_auto
+      requires: [storyboard]
+    - name: bgm
+      type: decision
+      skill: bgm
+      requires: [storyboard]
+    - name: rhythm
+      type: auto
+      skill: rhythm
+      requires: [storyboard, bgm]
+    - name: fine_cut
+      type: auto
+      skill: fine_cut
+      requires: [storyboard, rhythm]
+    - name: pre_render_check
+      type: quality_gate_auto
+      requires: [fine_cut]
+    - name: render
+      type: auto
+      skill: render
+      requires: [fine_cut, tts, bgm]
+    - name: post_render_check
+      type: quality_gate_auto
+      requires: [render]
+    - name: deliver
+      type: manual
+      requires: [post_render_check]

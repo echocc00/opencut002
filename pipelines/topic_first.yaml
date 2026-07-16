@@ -1,0 +1,79 @@
+pipeline:
+  name: topic_first
+  # default 基础上去掉 web_research -> 不做热点调研，AI 从素材分析直接选题（更快，无网络搜索依赖）。
+  # topic.requires 改为 [material_analysis]（不再依赖 web_research）。
+  # 注：topic 阶段仍由 AI 生成方向（从素材推断），非用户注入主题。用户注入主题需 --topic + TopicInputAgent（后续）。
+  # 用法：python scripts/run_full.py --pipeline topic_first --full ...
+  stages:
+    - name: material_analysis
+      type: auto
+      skill: material_analysis
+      requires: []
+    - name: topic
+      type: decision
+      skill: topic
+      requires: [material_analysis]
+    - name: highlight_selection
+      type: decision
+      skill: highlight
+      requires: [topic]
+    - name: copywriting
+      type: decision
+      skill: copywriting
+      requires: [topic, highlight_selection]
+    - name: image_matching
+      type: auto
+      skill: image_matching
+      requires: [copywriting, material_analysis]
+    - name: voice_selection
+      type: decision
+      skill: voice
+      requires: [copywriting]
+    - name: tts
+      type: auto
+      skill: tts
+      requires: [copywriting, voice_selection]
+    - name: storyboard
+      type: decision
+      skill: storyboard
+      requires: [copywriting, image_matching, tts]
+    - name: opening_review
+      type: quality_gate
+      skill: opening_review
+      requires: [storyboard]
+    - name: slideshow_check
+      type: quality_gate_auto
+      requires: [storyboard]
+    - name: bgm
+      type: decision
+      skill: bgm
+      requires: [storyboard]
+    - name: rhythm
+      type: auto
+      skill: rhythm
+      requires: [storyboard, bgm]
+    - name: title
+      type: decision
+      skill: title
+      requires: [copywriting]
+    - name: cover
+      type: decision
+      skill: cover
+      requires: [storyboard]
+    - name: fine_cut
+      type: auto
+      skill: fine_cut
+      requires: [storyboard, rhythm]
+    - name: pre_render_check
+      type: quality_gate_auto
+      requires: [fine_cut]
+    - name: render
+      type: auto
+      skill: render
+      requires: [fine_cut, tts, bgm]
+    - name: post_render_check
+      type: quality_gate_auto
+      requires: [render]
+    - name: deliver
+      type: manual
+      requires: [post_render_check]

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 from pathlib import Path
 from typing import Any
 
@@ -82,13 +84,30 @@ class DomainConfig:
         return self.style
 
 
-_domain_cache: dict[str, DomainConfig] = {}
+_domain_cache: dict[str, tuple[DomainConfig, float]] = {}
 
 
 def get_domain_config(domain_name: str, domains_dir: Path | None = None) -> DomainConfig:
+    """获取领域配置（v0.6.1 TTL 缓存）。
+
+    OPENCUT_DOMAIN_CACHE_TTL 秒内复用缓存（默认 60s）；设 0 永远重载（开发热改 style.yaml）。
+    """
+    try:
+        ttl = float(os.environ.get("OPENCUT_DOMAIN_CACHE_TTL", "60"))
+    except (TypeError, ValueError):
+        ttl = 60.0
+    now = time.time()
     if domain_name in _domain_cache:
-        return _domain_cache[domain_name]
+        config, load_time = _domain_cache[domain_name]
+        # ttl>0 且在 TTL 内才命中；ttl<=0 永远重载（开发热改 style.yaml）
+        if ttl > 0 and (now - load_time) < ttl:
+            return config
     base = domains_dir or get_settings().domains_dir
     config = DomainConfig(Path(base) / domain_name)
-    _domain_cache[domain_name] = config
+    _domain_cache[domain_name] = (config, now)
     return config
+
+
+def clear_domain_cache() -> None:
+    """清领域配置缓存（测试用）。"""
+    _domain_cache.clear()

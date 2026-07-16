@@ -7,6 +7,7 @@ from typing import Any
 from ..orchestrator.state import ProjectState, StageState
 from ..providers.selector import TaskType
 from ..tools.remotion_renderer import RemotionRenderer
+from ..utils.subtitle_split import split_subtitle_adaptive, compute_screen_durations, _clean_chars_count
 from ..quality.post_render_validator import validate_video, format_report
 from .base_agent import BaseStageAgent
 
@@ -17,6 +18,12 @@ def _ai_label_enabled() -> bool:
     """读 OPENCUT_AI_LABEL 环境变量决定是否渲染 AI 生成标识（默认关）。
     合规储备：B2C 公网上线时设 OPENCUT_AI_LABEL=1 即可开启，无需改代码。"""
     return os.environ.get("OPENCUT_AI_LABEL", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _subtitle_split_enabled() -> bool:
+    """屏级字幕切分（v0.6.1）。默认开（forced_align 对齐段自动屏级）。
+    OPENCUT_SUBTITLE_SPLIT=0 关闭，回退 v0.6.0 行级 subtitle_lines。"""
+    return os.environ.get("OPENCUT_SUBTITLE_SPLIT", "1").strip().lower() in ("1", "true", "yes", "on")
 
 
 class RenderAgent(BaseStageAgent):
@@ -59,15 +66,42 @@ class RenderAgent(BaseStageAgent):
         paragraph_timing = tts_output.get("paragraph_timing", []) if tts_output else []
         segments = self._build_paragraph_segments(paragraph_timing, matches, sb_segments, text_cards)
 
-        # A1/A2: forced align 成功的段注入 subtitle_lines（逐行进度字幕）
+        # A1/A2: forced align 成功的段做字幕同步
+        # v0.6.1: OPENCUT_SUBTITLE_SPLIT（默认开）-> 屏级切分（N 屏/段，真实时间戳驱动）
+        #         split 关 -> v0.6.0 行级 subtitle_lines
         aligned_segments = set(tts_output.get("aligned_segments", [])) if tts_output else set()
         if aligned_segments and word_timestamps:
-            segments = self._merge_word_timestamps(segments, word_timestamps)
+            sb_image_map = {s.get("index", i): s.get("image", "")
+                            for i, s in enumerate(sb_segments)}
+            material_files_all = [m.get("file", "") for m in state.materials if m.get("file")]
+            text_cards_set = set(text_cards or [])
+            split_enabled = _subtitle_split_enabled()
+
+            new_segments: list[dict] = []
             for seg in segments:
-                if seg.get("index") in aligned_segments and seg.get("subtitle_words"):
-                    seg["subtitle_lines"] = self._chunk_subtitle_lines(
-                        seg["subtitle_words"], seg.get("subtitle", ""))
-                seg.pop("subtitle_words", None)  # 用完即删（不传给 Remotion）
+                i = seg.get("index")
+                if i in aligned_segments and split_enabled:
+                    pt = next((p for p in paragraph_timing if p["index"] == i), None)
+                    if pt is not None:
+                        screen_segs = self._build_screen_segments(
+                            pt, matches.get(str(i), ""), sb_image_map.get(i, ""),
+                            material_files_all, text_cards_set, word_timestamps,
+                            seg.get("transition", "crossfade"))
+                        if screen_segs:
+                            new_segments.extend(screen_segs)
+                            continue
+                    # 屏级切分失败（单屏/无时间戳）-> 走段级整段
+                    new_segments.append(seg)
+                elif i in aligned_segments and not split_enabled:
+                    # v0.6.0 行级 subtitle_lines
+                    seg_wts = self._merge_word_timestamps([seg], word_timestamps)[0].get("subtitle_words", [])
+                    if seg_wts:
+                        seg["subtitle_lines"] = self._chunk_subtitle_lines(seg_wts, seg.get("subtitle", ""))
+                    new_segments.append(seg)
+                else:
+                    # 非对齐段：整段淡入（spring）
+                    new_segments.append(seg)
+            segments = new_segments
 
         # 从领域配置读取style并注入
         from ..config import get_domain_config, get_settings
@@ -280,6 +314,72 @@ class RenderAgent(BaseStageAgent):
                     "start": round(seg_words[first_wi]["start"], 3),
                     "end": round(seg_words[last_wi]["end"], 3),
                 })
+        return result
+
+    def _build_screen_segments(
+        self, pt: dict, match_img: str, sb_img: str, material_files: list[str],
+        text_cards: set[int], word_timestamps: list[dict], transition: str,
+    ) -> list[dict] | None:
+        """对单个 forced_align 对齐段做屏级切分，返回 N 个屏 segment（或 None 走段级）。
+
+        时间戳按时间段从全局 word_timestamps 过滤（兼容 hanzi-only 对齐输出 +
+        非对齐段造假输出的混合数组），转段内相对后喂给 compute_screen_durations。
+        4 层图候选：匹配图 -> storyboard 图 -> 素材轮换，屏间轮换 + Ken Burns。
+        """
+        text = pt.get("text", "")
+        seg_start = pt["start"]
+        seg_end = seg_start + pt["duration"]
+        if not text or pt["duration"] <= 0:
+            return None
+
+        seg_wts_global = [w for w in word_timestamps
+                          if seg_start <= w.get("start", 0) < seg_end]
+        seg_wts_local = [
+            {"word": w["word"],
+             "start": round(w["start"] - seg_start, 3),
+             "end": round(w["end"] - seg_start, 3)}
+            for w in seg_wts_global
+        ]
+
+        screens = split_subtitle_adaptive(text, audio_duration=pt["duration"])
+        if len(screens) <= 1:
+            return None  # 单屏无意义，走段级
+
+        screen_timings = compute_screen_durations(
+            text, seg_start, pt["duration"], seg_wts_local, screens)
+        if not screen_timings:
+            return None
+
+        # 4 层图候选（去重，最多 8 张供屏间轮换）
+        cands: list[str] = []
+        if match_img:
+            cands.append(match_img)
+        if sb_img and sb_img not in cands:
+            cands.append(sb_img)
+        for m in material_files:
+            if m and m not in cands:
+                cands.append(m)
+                if len(cands) >= 8:
+                    break
+        is_text_card = (pt["index"] in text_cards) and not cands
+
+        result: list[dict] = []
+        for scr_idx, (screen_text, timing) in enumerate(zip(screens, screen_timings)):
+            image = cands[scr_idx % len(cands)] if cands else ""
+            result.append({
+                "index": pt["index"],
+                "screen_index": scr_idx,
+                "screens_total": len(screens),
+                "image": image,
+                "actual_duration": round(timing["duration"], 3),
+                "time_start": round(timing["start"], 3),
+                "subtitle": screen_text,
+                "transition": transition if scr_idx == 0 else "fade",
+                "text_card": is_text_card,
+                "audio_start": round(seg_start, 3),
+                "audio_duration": round(pt["duration"], 3),
+                "screen_chars": _clean_chars_count(screen_text),
+            })
         return result
 
     def _build_paragraph_segments(self, paragraph_timing: list[dict],

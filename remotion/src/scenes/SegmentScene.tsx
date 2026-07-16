@@ -20,7 +20,10 @@ export const SegmentScene: React.FC<{
   segmentIndex: number;
   segmentDuration: number;
   subtitleLines?: { text: string; start: number; end: number }[];
-}> = ({ image, subtitle, transition, theme, segmentIndex, segmentDuration, subtitleLines }) => {
+  // v0.6.1 屏级切分：同段多屏时 Ken Burns 缓动 + 4 方向漂移增视觉变化
+  screenIndex?: number;
+  screensTotal?: number;
+}> = ({ image, subtitle, transition, theme, segmentIndex, segmentDuration, subtitleLines, screenIndex = 0, screensTotal = 1 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -38,6 +41,19 @@ export const SegmentScene: React.FC<{
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
+  // Ken Burns（v0.6.1）：同段多屏时缓动缩放 + 4 方向漂移，避免同图多屏静态
+  let kenBurnsScale = 1.0;
+  let kenBurnsTranslateX = 0;
+  let kenBurnsTranslateY = 0;
+  if (screensTotal > 1 && segFrames > 0) {
+    const t = interpolate(frame, [0, segFrames], [0, 1], { extrapolateRight: "clamp" });
+    kenBurnsScale = 1.0 + t * 0.08;
+    const directions: Array<[number, number]> = [[20, 0], [-20, 0], [0, -15], [0, 15]];
+    const dir = directions[screenIndex % 4];
+    kenBurnsTranslateX = t * dir[0];
+    kenBurnsTranslateY = t * dir[1];
+  }
+
   // transition入场效果
   let enterTransform = `scale(${enterScale})`;
   if (transition === "slide" || transition === "slide_left") {
@@ -47,6 +63,7 @@ export const SegmentScene: React.FC<{
     const slideX = interpolate(frame, [0, 8], [80, 0], { extrapolateRight: "clamp" });
     enterTransform = `translateX(${slideX}px) scale(${enterScale})`;
   }
+  // "fade" / "crossfade"：仅 opacity 淡入，无额外位移（屏间过渡默认走 fade）
 
   const opacity = enterOpacity * exitOpacity;
   const resolvedImage = image ? resolveAsset(image) : "";
@@ -58,7 +75,7 @@ export const SegmentScene: React.FC<{
         <AbsoluteFill style={{ opacity }}>
           <Img src={resolvedImage} style={{
             width: "100%", height: "100%", objectFit: "cover",
-            transform: `scale(1.3) translate(${motion.translateX * 0.5}px, ${motion.translateY * 0.5}px)`,
+            transform: `scale(${1.3 * kenBurnsScale}) translate(${motion.translateX * 0.5 + kenBurnsTranslateX}px, ${motion.translateY * 0.5 + kenBurnsTranslateY}px)`,
             filter: "blur(30px) brightness(0.4)",
           }} />
           {/* 暗化遮罩 */}
@@ -83,7 +100,7 @@ export const SegmentScene: React.FC<{
           }}>
             <Img src={resolvedImage} style={{
               width: "100%", height: "100%", objectFit: "cover",
-              transform: `scale(${motion.scale}) translate(${motion.translateX}px, ${motion.translateY}px)`,
+              transform: `scale(${motion.scale * kenBurnsScale}) translate(${motion.translateX + kenBurnsTranslateX}px, ${motion.translateY + kenBurnsTranslateY}px)`,
             }} />
           </div>
         </AbsoluteFill>

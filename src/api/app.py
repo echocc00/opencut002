@@ -9,8 +9,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.engine import init_db
+from .. import __version__
 from .admin_routes import router as admin_router
 from .auth_routes import router as auth_router
+from .health import router as health_router
 from .job_routes import router as job_router
 from .panel_routes import router as panel_router
 from .project_routes import router as project_router
@@ -25,7 +27,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="OpenCut v3.0", version="0.4.0", lifespan=lifespan)
+app = FastAPI(title="OpenCut v3.0", version=__version__, lifespan=lifespan)
 
 # CORS：生产环境用 OPENCUT_CORS_ORIGINS 设置白名单（逗号分隔）；未设置时默认放开（仅开发用）
 _cors_env = os.environ.get("OPENCUT_CORS_ORIGINS", "").split(",")
@@ -39,6 +41,7 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(job_router)
@@ -48,4 +51,4 @@ app.include_router(project_router)
 
 @app.get("/")
 async def root():
-    return {"name": "OpenCut v3.0", "version": "0.4.0", "status": "running"}
+    return {"name": "OpenCut v3.0", "version": __version__, "status": "running"}

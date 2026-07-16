@@ -63,5 +63,19 @@ def check_output_completeness(stage_name: str, output: dict[str, Any]) -> tuple[
         directions = output.get("directions", [])
         if not directions:
             issues.append("选题方向为空")
+    elif stage_name == "web_research":
+        # v0.6.1: hot_topics 空 = AI 偶发空输出，触发 engine 重试
+        hot_topics = output.get("hot_topics", [])
+        if not hot_topics:
+            issues.append("hot_topics empty (AI intermittent empty output)")
 
     return (len(issues) == 0, issues)
+
+
+def validate_output_typed(stage_name: str, output: dict[str, Any]) -> tuple[bool, list[str], list[str]]:
+    """返回 (passed, errors, warnings)。errors 阻断，warnings 非阻断（预留）。
+
+    v0.6.1：当前所有 issue 都进 errors，warnings 留给未来分级。
+    """
+    passed, issues = validate_output(stage_name, output)
+    return (passed, issues, [])

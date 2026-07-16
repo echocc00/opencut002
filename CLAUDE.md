@@ -189,6 +189,8 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     （torch+torchaudio+transformers），首次下 ~1.2GB 模型（HuggingFace，需代理）。失败逐段回退整段淡入。
     chunk-per-segment/jieba/even-split 均已验证失败（破坏语流/漂移），已回退 -- 本方案不切 TTS、
     不用 jieba、不造时间戳，wav2vec2 从音频测真实时间。
+    **v0.6.1**：`OPENCUT_FORCED_ALIGN=1` 时默认走屏级切分（见 #19），`_chunk_subtitle_lines` 行级
+    作为 `OPENCUT_SUBTITLE_SPLIT=0` 时的 fallback。
 
 11. **人脸遮盖（opt-in，默认关）**：设 `OPENCUT_FACE_MASK=1` 开启。`src/tools/face_masker.py`
     用 opencv YuNet 检测素材图所有人脸，可爱贴纸（`src/tools/stickers/*.png`，openmoji）bake 进图，
@@ -239,6 +241,28 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     依赖 `[align]` extras（torch+torchaudio+transformers，非 whisperx 包）。首次下 ~1.2GB（需代理）。
     失败逐段回退造假 + 整段淡入，不崩。详见 #10。`_filter_chars` 只留汉字，标点/数字/英文无时间戳
     （字幕行按汉字时间戳对齐，标点随相邻汉字）。
+
+19. **屏级字幕切分（v0.6.1，默认开）**：`OPENCUT_FORCED_ALIGN=1` 对齐段自动拆 ≤16 字/屏
+    （`src/utils/subtitle_split.py`，理想 8-14 字，标点切 + 尾屏合并），每屏时长由 forced_align
+    **真实**逐字时间戳驱动（`compute_screen_durations` 按汉字位置映射 + 连续分区，修 v0.5.4 audit
+    的造假均分 + char_cursor 越界静默 bug）。每屏自己的图（4 层兜底：匹配->storyboard->素材轮换->空）
+    + Ken Burns 缓动（同段多屏 scale 1.0->1.08 + 4 方向漂移）。`render_agent._build_screen_segments`
+    按时间段从全局 word_timestamps 过滤（兼容对齐/造假混合数组）。`OPENCUT_SUBTITLE_SPLIT=0` 关，
+    回退 #10 行级 subtitle_lines。非对齐段走段级整段淡入。
+
+20. **正交模块（v0.6.1，port 自 v0.5.4 audit + 修复）**：
+    - `src/api/health.py`：`/health`(liveness) `/health/ready`(readiness,503) `/health/detail`(调试)。
+      version 从 `__version__` 读；detail 不返绝对路径（防侦察）；data_dir 用 tempfile 写测（修 symlink 竞态）。
+    - `src/orchestrator/state_migrator.py` + `state.py` `schema_version=2`：旧 state.json load 时自动迁移
+      （setdefault 不覆盖用户数据）；`save()` 原子写（tmp+rename）；json 大小校验（防资源耗尽）。
+    - `src/providers/fallback.py`：`call_with_fallback` 多 provider 故障转移，瞬时->转移/永久(auth/4xx)->raise
+      （拓宽 auth 检测：status_code + openai auth 异常 + minimax 消息启发式，防 401/403 误转移泄漏 prompt）。
+    - `src/utils/json_extract.py`：共享字符串感知 JSON 提取（修旧贪婪 regex 遇嵌套/字符串内大括号丢响应），
+      `base_agent._extract_json` + `image_matcher` 共用。
+    - `image_matcher` dedup 修复（`basename_list_map` 多候选，同名跨目录不覆盖）。
+    - `postflight.validate_output_typed`（errors/warnings 分级）+ web_research hot_topics 空检查。
+    - `config` 领域缓存 TTL（`OPENCUT_DOMAIN_CACHE_TTL` 默认 60s）+ `clear_domain_cache`。
+    - `.github/workflows/ci.yml`：test 矩阵(3.10/3.11/3.12) + 稳定性 + Remotion tsc + health 冒烟。
 
 ## Agent 操作守则
 

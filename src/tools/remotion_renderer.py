@@ -134,6 +134,11 @@ class RemotionRenderer:
                 elif k == "subtitle_lines": camel_key = "subtitleLines"
                 elif k == "transition_duration": camel_key = "transitionDuration"
                 elif k == "text_card": camel_key = "textCard"
+                elif k == "screen_index": camel_key = "screenIndex"
+                elif k == "screens_total": camel_key = "screensTotal"
+                elif k == "audio_start": camel_key = "audioStart"
+                elif k == "audio_duration": camel_key = "audioDuration"
+                elif k == "screen_chars": camel_key = "screenChars"
                 else: camel_key = k
                 cs[camel_key] = v
             camel_segments.append(cs)

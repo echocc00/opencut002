@@ -304,6 +304,46 @@ cd web && npm install && npm run dev            # 前端 http://localhost:3000
     镜像 `get_masked_path` 懒处理模式。`render_agent._stage_asset` 链式：masked -> reframed。
     material_analysis 见原图。需 `[face]` extras（opencv）；失败/非图返原图，不崩。
 
+25. **素材多样性抽帧（v0.6.4，opt-in，默认关）**：`OPENCUT_MATERIAL_DIVERSITY=1` 开启。
+    `material_prep.prepare_materials(max_per_video=3, diversity=True)`：每视频最多贡献 3 帧 +
+    `_select_diverse_frames` 按相邻帧像素差选差异最大的 top-k（保持时序，避免候选全是首帧 frame_001）。
+    PIL/numpy 缺失回退均匀采样。`run_full.py` + `api/project_routes.py` 都读此 env。
+    默认关 = v0.6.3 行为（`max_count=5, fps=0.2, max_per_video=None`）。详见
+    [docs/material-diversity-design.md](docs/material-diversity-design.md)。
+
+26. **clip 蒙太奇质量评分器（v0.6.4，工具模块，未接线）**：`src/quality/clip_montage_scorer.py`
+    `score_clip_storyboard(segments, ...)` 纯函数评分（视频占比/源多样性/缺失/过短/时间线连续性/
+    人脸遮盖合规门），返 `ClipMontageScore`（total_score=风险分，issues 非空即 passed=False）。
+    借鉴第三方 fork Level B/B1 思想，为未来原生视频剪辑模式铺路；当前**不接线进 engine**（纯加法，
+    零行为变化），供 CLI 体检/后续复用。
+
+## 第三方 fork 审计结论（v0.6.4）
+
+审计了第三方 fork（`F:\codex\opencut002`，105 commits，基线停在 v0.6.1-saas）的《提审报告》，
+结论如下（两仓无共同 git 历史 + fork 缺 v0.6.2/v0.6.3，共享文件已严重分叉，**不做整仓合并**）：
+
+**已有等价/更优实现（跳过）**：image_matcher dedup、base_agent 重试（上游 backoff[0.5,1,2] 更优）、
+web_research 空检查、health 端点、state_migrator、provider fallback、json_extract、config TTL、
+CI、屏级字幕切分 —— 这些上游 v0.6.1 已 port 自同一 audit 来源。
+
+**本期合并**：PR-F 素材多样性（#25）+ clip_montage_scorer 质量门（#26）+ 设计文档。
+
+**记录为 roadmap（本期不做）**：
+- **Level B 原生视频剪辑模式**（clip_material_analysis/asset_matching/clip_conformer/clip_timeline，
+  ffmpeg 精确剪辑 + TTS 驱动时间线）：重型独立 feature，需整体设计评审，非 cherry-pick 级。
+- **Level B1 视频级人脸遮盖**（face_tracker IoU 追踪 + video_face_masker 逐帧贴纸/马赛克）：
+  上游已有图级 `face_masker`（#11），视频级是更大工程；质量门思想已借入 #26。
+- **Level C 向量检索**（vector_encoder 3-tier CLIP 降级 + vector_index + retrieval 预过滤，
+  token -56%~-91%）：重依赖 torch/CLIP，需独立依赖决策。
+- **opencut-materials/VidSlice 集成**：外部子项目（报告称其 v0.7.8 有 5 个 P0 bug），不涉及本仓。
+- **workspace 自定位**（`--workspace` + 13 脚本改造）：行为改动面大，单独评审。
+
+**明确不采纳**：
+- **TTS single-call + prosody analyzer**：上游 v0.6.1 已**显式拒绝**单次 TTS 模式
+  （假段落时间与逐段 trim_silence/forced_align 冲突），尊重既定决策。
+- fork 把 `material_prep` 默认 `max_count` 5→30、`fps` 0.2→0.5：属行为变更，不采纳
+  （上游保持默认，仅 opt-in 引入 diversity，见 #25）。
+
 ## Agent 操作守则
 
 - **改代码前**：先读 [docs/data-flow-contract.md](docs/data-flow-contract.md) 确认契约；

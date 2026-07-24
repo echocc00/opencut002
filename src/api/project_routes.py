@@ -70,8 +70,14 @@ async def create_project(
         with open(dest, "wb") as out:
             shutil.copyfileobj(f.file, out)
 
-    # prepare_materials：收集图片 + 视频抽帧，取前 5 张
-    prepared = prepare_materials(mat_dir)
+    # prepare_materials：收集图片 + 视频抽帧（OPENCUT_MATERIAL_DIVERSITY=1 时帧间差异选帧，v0.6.4）
+    from ..tools.material_prep import DIVERSITY_MAX_PER_VIDEO, diversity_enabled
+    _div = diversity_enabled()
+    prepared = prepare_materials(
+        mat_dir,
+        max_per_video=DIVERSITY_MAX_PER_VIDEO if _div else None,
+        diversity=_div,
+    )
     if not prepared:
         raise HTTPException(400, "未提供可用素材（支持 jpg/jpeg/png 图片或 mp4 等视频）")
 

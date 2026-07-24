@@ -22,7 +22,7 @@ from src.agents.skill_loader import SkillLoader
 from src.agents.decision_logger import DecisionLogger
 from src.providers.selector import ProviderSelector
 from src.config import DomainConfig
-from src.tools.material_prep import prepare_materials
+from src.tools.material_prep import DIVERSITY_MAX_PER_VIDEO, diversity_enabled, prepare_materials
 
 
 async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/materials",
@@ -37,7 +37,13 @@ async def main(full: bool = False, materials_dir: str = "data/projects/edu_test/
     if not mat_dir.exists():
         print(f"❌ 素材目录不存在: {mat_dir}（放入 .jpg/.jpeg/.png 图片，或 .mp4 等视频自动抽帧）")
         sys.exit(1)
-    materials = prepare_materials(mat_dir)
+    # OPENCUT_MATERIAL_DIVERSITY=1: 帧间差异选帧 + 每视频最多 3 帧（v0.6.4，避免候选都是首帧）
+    _div = diversity_enabled()
+    materials = prepare_materials(
+        mat_dir,
+        max_per_video=DIVERSITY_MAX_PER_VIDEO if _div else None,
+        diversity=_div,
+    )
     if not materials:
         print(f"❌ 素材目录无可用图片/视频: {mat_dir}（支持 jpg/jpeg/png + mp4/mov/avi/mkv/webm）")
         sys.exit(1)

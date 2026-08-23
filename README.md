@@ -1,6 +1,10 @@
 # OpenCut v3
 
+> **v0.6.5** · Apache-2.0 · CLI + SaaS 双轨 · 20 阶段管道 · TTS + Remotion 渲染
+
 AI 驱动的多领域短视频生产平台。输入素材图片 + 领域配置，自动产出带配音、字幕、
+
+[![Latest Release](https://img.shields.io/github/v/release/echocc00/opencut002?display_name=tag&style=flat-square)](https://github.com/echocc00/opencut002/releases/latest)
 
 > 💼 **商业授权 / Commercial licensing**
 >

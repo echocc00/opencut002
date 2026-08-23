@@ -5,6 +5,8 @@
 AI 驱动的多领域短视频生产平台。输入素材图片 + 领域配置，自动产出带配音、字幕、
 
 [![Latest Release](https://img.shields.io/github/v/release/echocc00/opencut002?display_name=tag&style=flat-square)](https://github.com/echocc00/opencut002/releases/latest)
+[![License](https://img.shields.io/github/license/echocc00/opencut002?style=flat-square)](./LICENSE)
+[![License Check](https://img.shields.io/github/actions/workflow/status/echocc00/opencut002/license-check.yml?branch=main&style=flat-square&label=license)](https://github.com/echocc00/opencut002/actions/workflows/license-check.yml)
 
 > 💼 **商业授权 / Commercial licensing**
 >

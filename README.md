@@ -179,3 +179,8 @@ A: `python scripts/clone_voice.py --audio <参考音频> --voice-id <自定义ID
 
 本项目采用 [GPL-3.0](LICENSE) 协议。任何人可自由使用、修改、分发，但衍生作品必须
 同样以 GPL-3.0 开源，并保留版权与许可声明。
+
+
+---
+
+<sub>📋 本 README 遵循 [echocc00/README-TEMPLATE.md](https://github.com/echocc00/.github/blob/main/README-TEMPLATE.md) 写作规范</sub>

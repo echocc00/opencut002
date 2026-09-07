@@ -29,6 +29,18 @@ AI 驱动的多领域短视频生产平台。输入素材图片 + 领域配置�
 
 BGM 的竖版短视频（1080x1920）。
 
+## Architecture
+
+<p align="center">
+  <img src="docs/architecture.svg" alt="Architecture diagram" width="900">
+</p>
+
+## Sequence
+
+<p align="center">
+  <img src="docs/architecture-sequence.svg" alt="Architecture sequence diagram" width="900">
+</p>
+
 ## 快速开始（5 步出片）
 > 📘 想要 **5 分钟完整跑通**?[看 `docs/getting-started.md`](docs/getting-started.md) — 涵盖 bootstrap / API key / 跑通完整管道。
 

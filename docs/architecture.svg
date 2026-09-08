@@ -1,40 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" role="img" lang="en">
-<defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
-          </marker>
-          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
-          </marker>
-          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
-          </marker>
-          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
-          </marker>
-          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
-          </pattern>
-        </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 600" role="img" lang="en">
 
         <title id="archify-diagram-title">opencut v3</title>
         <desc id="archify-diagram-description">AI-driven multi-domain video production</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" style="fill: #948978" />
           </marker>
           <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" style="fill: #dd6b3d" />
           </marker>
           <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" style="fill: #df9085" />
           </marker>
           <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" style="fill: #c0a4d0" />
           </marker>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" style="stroke-dasharray: 1 3; opacity: 0.78" stroke-width="0.5"/>
           </pattern>
         </defs>
 
@@ -45,149 +28,149 @@
 
 
         <!-- Connection paths (before components for correct z-order) -->
-        <path data-edge-from="client" data-edge-to="fastapi" data-edge-label="REST" data-edge-key="0" data-edge-id="client-fastapi" data-composition-points="200,300;240,300" d="M 200 300 L 240 300" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="fastapi" data-edge-to="edge_tts" data-edge-label="speak" data-edge-key="1" data-edge-id="fastapi-edge" data-composition-points="320,270;320,200;555,200;555,140" d="M 320 270 L 320 208 Q 320 200 328 200 L 547 200 Q 555 200 555 192 L 555 140" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="fastapi" data-edge-to="openai" data-edge-label="script" data-edge-key="2" data-edge-id="fastapi-openai" data-composition-points="400,300;480,300" d="M 400 300 L 480 300" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="fastapi" data-edge-to="torch" data-edge-label="align" data-edge-key="3" data-edge-id="fastapi-torch" data-composition-points="320,330;320,400;555,400;555,460" d="M 320 330 L 320 392 Q 320 400 328 400 L 547 400 Q 555 400 555 408 L 555 460" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="fastapi" data-edge-to="opencv" data-edge-label="detect" data-edge-key="4" data-edge-id="fastapi-opencv" data-composition-points="320,270;320,170;795,170;795,140" d="M 320 270 L 320 178 Q 320 170 328 170 L 787 170 Q 795 170 795 162 L 795 140" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="fastapi" data-edge-to="httpx" data-edge-label="fetch" data-edge-key="5" data-edge-id="fastapi-httpx" data-composition-points="320,330;320,420;795,420;795,460" d="M 320 330 L 320 412 Q 320 420 328 420 L 787 420 Q 795 420 795 428 L 795 460" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="torch" data-edge-to="transformers" data-edge-label="models" data-edge-key="6" data-edge-id="torch-transformers" data-composition-points="555,520;555,520;555,540;900,540;900,300;870,300;870,300" d="M 555 520 L 555 520 L 555 532 Q 555 540 563 540 L 892 540 Q 900 540 900 532 L 900 308 Q 900 300 892 300 L 870 300 L 870 300" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="fastapi" data-edge-to="render" data-edge-label="compose" data-edge-key="7" data-edge-id="fastapi-render" data-composition-points="320,270;320,190;1000,190;1000,270" d="M 320 270 L 320 198 Q 320 190 328 190 L 992 190 Q 1000 190 1000 198 L 1000 270" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="client" data-edge-to="fastapi" data-edge-label="REST" data-edge-key="0" data-edge-id="client-fastapi" data-composition-points="200,300;240,300" d="M 200 300 L 240 300" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="fastapi" data-edge-to="edge_tts" data-edge-label="speak" data-edge-key="1" data-edge-id="fastapi-edge" data-composition-points="320,270;320,200;555,200;555,140" d="M 320 270 L 320 208 Q 320 200 328 200 L 547 200 Q 555 200 555 192 L 555 140" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="fastapi" data-edge-to="openai" data-edge-label="script" data-edge-key="2" data-edge-id="fastapi-openai" data-composition-points="400,300;480,300" d="M 400 300 L 480 300" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="fastapi" data-edge-to="torch" data-edge-label="align" data-edge-key="3" data-edge-id="fastapi-torch" data-composition-points="320,330;320,400;555,400;555,460" d="M 320 330 L 320 392 Q 320 400 328 400 L 547 400 Q 555 400 555 408 L 555 460" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="fastapi" data-edge-to="opencv" data-edge-label="detect" data-edge-key="4" data-edge-id="fastapi-opencv" data-composition-points="320,270;320,170;795,170;795,140" d="M 320 270 L 320 178 Q 320 170 328 170 L 787 170 Q 795 170 795 162 L 795 140" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="fastapi" data-edge-to="httpx" data-edge-label="fetch" data-edge-key="5" data-edge-id="fastapi-httpx" data-composition-points="320,330;320,420;795,420;795,460" d="M 320 330 L 320 412 Q 320 420 328 420 L 787 420 Q 795 420 795 428 L 795 460" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="torch" data-edge-to="transformers" data-edge-label="models" data-edge-key="6" data-edge-id="torch-transformers" data-composition-points="555,520;555,520;555,540;900,540;900,300;870,300;870,300" d="M 555 520 L 555 520 L 555 532 Q 555 540 563 540 L 892 540 Q 900 540 900 532 L 900 308 Q 900 300 892 300 L 870 300 L 870 300" class="a-default" style="stroke: #948978" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="fastapi" data-edge-to="render" data-edge-label="compose" data-edge-key="7" data-edge-id="fastapi-render" data-composition-points="320,270;320,190;1000,190;1000,270" d="M 320 270 L 320 198 Q 320 190 328 190 L 992 190 Q 1000 190 1000 198 L 1000 270" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
 
         <!-- Components -->
         <g id="node-client" data-node-id="client" data-node-label="Client" tabindex="0" role="button" aria-label="Focus Client, web / mobile, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="web / mobile" data-node-context="Architecture component">
           <title>Client · web / mobile · Architecture component</title>
-          <rect x="60" y="270" width="140" height="60" rx="6" class="c-mask"/>
-          <rect x="60" y="270" width="140" height="60" rx="6" class="c-external" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(66 276) scale(0.6875)">
+          <rect x="60" y="270" width="140" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="60" y="270" width="140" height="60" rx="6" class="c-external" style="fill: rgba(126, 115, 96, 0.18); stroke: #b8ad99" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #b8ad99" transform="translate(66 276) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="130" y="298" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Client</text>
-        <text data-detail="context" x="130" y="314" class="t-muted" font-size="9" text-anchor="middle">web / mobile</text>
+          <text data-node-label="" data-detail-anchor="" x="130" y="298" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Client</text>
+        <text data-detail="context" x="130" y="314" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">web / mobile</text>
         </g>
 
         <g id="node-fastapi" data-node-id="fastapi" data-node-label="FastAPI + Uvicorn" tabindex="0" role="button" aria-label="Focus FastAPI + Uvicorn, Python 3.10+, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Python 3.10+" data-node-tag="Pydantic v2" data-node-context="Architecture component">
           <title>FastAPI + Uvicorn · Python 3.10+ · Architecture component · Pydantic v2</title>
-          <rect x="240" y="270" width="160" height="60" rx="6" class="c-mask"/>
-          <rect x="240" y="270" width="160" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(246 276) scale(0.6875)">
+          <rect x="240" y="270" width="160" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="240" y="270" width="160" height="60" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(246 276) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="320" y="298" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FastAPI + Uvicorn</text>
-        <text data-detail="context" x="320" y="314" class="t-muted" font-size="9" text-anchor="middle">Python 3.10+</text>
-        <text data-detail="fine" x="320" y="322" class="t-backend" font-size="7" text-anchor="middle">Pydantic v2</text>
+          <text data-node-label="" data-detail-anchor="" x="320" y="298" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">FastAPI + Uvicorn</text>
+        <text data-detail="context" x="320" y="314" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">Python 3.10+</text>
+        <text data-detail="fine" x="320" y="322" class="t-backend" style="fill: #8fc29e" font-size="7" text-anchor="middle">Pydantic v2</text>
         </g>
 
         <g id="node-edge_tts" data-node-id="edge_tts" data-node-label="edge-tts" tabindex="0" role="button" aria-label="Focus edge-tts, voice synthesis, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="voice synthesis" data-node-context="Architecture component">
           <title>edge-tts · voice synthesis · Architecture component</title>
-          <rect x="480" y="80" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="480" y="80" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(486 86) scale(0.6875)">
+          <rect x="480" y="80" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="480" y="80" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(486 86) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="555" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">edge-tts</text>
-        <text data-detail="context" x="555" y="124" class="t-muted" font-size="9" text-anchor="middle">voice synthesis</text>
+          <text data-node-label="" data-detail-anchor="" x="555" y="108" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">edge-tts</text>
+        <text data-detail="context" x="555" y="124" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">voice synthesis</text>
         </g>
 
         <g id="node-openai" data-node-id="openai" data-node-label="OpenAI SDK" tabindex="0" role="button" aria-label="Focus OpenAI SDK, LLM script, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="LLM script" data-node-context="Architecture component">
           <title>OpenAI SDK · LLM script · Architecture component</title>
-          <rect x="480" y="270" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="480" y="270" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(486 276) scale(0.6875)">
+          <rect x="480" y="270" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="480" y="270" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(486 276) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="555" y="298" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">OpenAI SDK</text>
-        <text data-detail="context" x="555" y="314" class="t-muted" font-size="9" text-anchor="middle">LLM script</text>
+          <text data-node-label="" data-detail-anchor="" x="555" y="298" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">OpenAI SDK</text>
+        <text data-detail="context" x="555" y="314" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">LLM script</text>
         </g>
 
         <g id="node-torch" data-node-id="torch" data-node-label="PyTorch" tabindex="0" role="button" aria-label="Focus PyTorch, align extra, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="align extra" data-node-context="Architecture component">
           <title>PyTorch · align extra · Architecture component</title>
-          <rect x="480" y="460" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="480" y="460" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(486 466) scale(0.6875)">
+          <rect x="480" y="460" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="480" y="460" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(486 466) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="555" y="488" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">PyTorch</text>
-        <text data-detail="context" x="555" y="504" class="t-muted" font-size="9" text-anchor="middle">align extra</text>
+          <text data-node-label="" data-detail-anchor="" x="555" y="488" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">PyTorch</text>
+        <text data-detail="context" x="555" y="504" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">align extra</text>
         </g>
 
         <g id="node-opencv" data-node-id="opencv" data-node-label="OpenCV" tabindex="0" role="button" aria-label="Focus OpenCV, face detect extra, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="face detect extra" data-node-context="Architecture component">
           <title>OpenCV · face detect extra · Architecture component</title>
-          <rect x="720" y="80" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="720" y="80" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(726 86) scale(0.6875)">
+          <rect x="720" y="80" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="720" y="80" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(726 86) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="795" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">OpenCV</text>
-        <text data-detail="context" x="795" y="124" class="t-muted" font-size="9" text-anchor="middle">face detect extra</text>
+          <text data-node-label="" data-detail-anchor="" x="795" y="108" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">OpenCV</text>
+        <text data-detail="context" x="795" y="124" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">face detect extra</text>
         </g>
 
         <g id="node-transformers" data-node-id="transformers" data-node-label="Transformers" tabindex="0" role="button" aria-label="Focus Transformers, align extra, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="align extra" data-node-context="Architecture component">
           <title>Transformers · align extra · Architecture component</title>
-          <rect x="720" y="270" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="720" y="270" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(726 276) scale(0.6875)">
+          <rect x="720" y="270" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="720" y="270" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(726 276) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="795" y="298" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Transformers</text>
-        <text data-detail="context" x="795" y="314" class="t-muted" font-size="9" text-anchor="middle">align extra</text>
+          <text data-node-label="" data-detail-anchor="" x="795" y="298" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Transformers</text>
+        <text data-detail="context" x="795" y="314" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">align extra</text>
         </g>
 
         <g id="node-httpx" data-node-id="httpx" data-node-label="httpx async" tabindex="0" role="button" aria-label="Focus httpx async, external APIs, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="external APIs" data-node-context="Architecture component">
           <title>httpx async · external APIs · Architecture component</title>
-          <rect x="720" y="460" width="150" height="60" rx="6" class="c-mask"/>
-          <rect x="720" y="460" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(726 466) scale(0.6875)">
+          <rect x="720" y="460" width="150" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="720" y="460" width="150" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(726 466) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="795" y="488" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">httpx async</text>
-        <text data-detail="context" x="795" y="504" class="t-muted" font-size="9" text-anchor="middle">external APIs</text>
+          <text data-node-label="" data-detail-anchor="" x="795" y="488" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">httpx async</text>
+        <text data-detail="context" x="795" y="504" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">external APIs</text>
         </g>
 
         <g id="node-render" data-node-id="render" data-node-label="Render Pipeline" tabindex="0" role="button" aria-label="Focus Render Pipeline, ffmpeg + compose, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="ffmpeg + compose" data-node-context="Architecture component">
           <title>Render Pipeline · ffmpeg + compose · Architecture component</title>
-          <rect x="910" y="270" width="180" height="60" rx="6" class="c-mask"/>
-          <rect x="910" y="270" width="180" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(916 276) scale(0.6875)">
+          <rect x="910" y="270" width="180" height="60" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="910" y="270" width="180" height="60" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(916 276) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="1000" y="298" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Render Pipeline</text>
-        <text data-detail="context" x="1000" y="314" class="t-muted" font-size="9" text-anchor="middle">ffmpeg + compose</text>
+          <text data-node-label="" data-detail-anchor="" x="1000" y="298" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Render Pipeline</text>
+        <text data-detail="context" x="1000" y="314" class="t-muted" style="fill: #b9ae9b" font-size="9" text-anchor="middle">ffmpeg + compose</text>
         </g>
 
         <!-- Connection labels -->
         <g data-detail="context" data-edge-from="client" data-edge-to="fastapi" data-edge-label="REST" data-edge-key="0" data-edge-id="client-fastapi">
-          <rect x="205" y="290" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="220" y="300" class="t-muted" font-size="8" text-anchor="middle">REST</text>
+          <rect x="205" y="290" width="30" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="220" y="300" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">REST</text>
         </g>
         <g data-detail="context" data-edge-from="fastapi" data-edge-to="edge_tts" data-edge-label="speak" data-edge-key="1" data-edge-id="fastapi-edge">
-          <rect x="420" y="205" width="34" height="14" rx="3" class="c-mask"/>
-          <text x="437" y="215" class="t-muted" font-size="8" text-anchor="middle">speak</text>
+          <rect x="420" y="205" width="34" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="437" y="215" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">speak</text>
         </g>
         <g data-detail="context" data-edge-from="fastapi" data-edge-to="openai" data-edge-label="script" data-edge-key="2" data-edge-id="fastapi-openai">
-          <rect x="420.6" y="290" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="440" y="300" class="t-muted" font-size="8" text-anchor="middle">script</text>
+          <rect x="420.6" y="290" width="38.8" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="440" y="300" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">script</text>
         </g>
         <g data-detail="context" data-edge-from="fastapi" data-edge-to="torch" data-edge-label="align" data-edge-key="3" data-edge-id="fastapi-torch">
-          <rect x="420" y="390" width="34" height="14" rx="3" class="c-mask"/>
-          <text x="437" y="400" class="t-muted" font-size="8" text-anchor="middle">align</text>
+          <rect x="420" y="390" width="34" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="437" y="400" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">align</text>
         </g>
         <g data-detail="context" data-edge-from="fastapi" data-edge-to="opencv" data-edge-label="detect" data-edge-key="4" data-edge-id="fastapi-opencv">
-          <rect x="580.6" y="150" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="600" y="160" class="t-muted" font-size="8" text-anchor="middle">detect</text>
+          <rect x="580.6" y="150" width="38.8" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="600" y="160" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">detect</text>
         </g>
         <g data-detail="context" data-edge-from="fastapi" data-edge-to="httpx" data-edge-label="fetch" data-edge-key="5" data-edge-id="fastapi-httpx">
-          <rect x="583" y="430" width="34" height="14" rx="3" class="c-mask"/>
-          <text x="600" y="440" class="t-muted" font-size="8" text-anchor="middle">fetch</text>
+          <rect x="583" y="430" width="34" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="600" y="440" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">fetch</text>
         </g>
         <g data-detail="context" data-edge-from="torch" data-edge-to="transformers" data-edge-label="models" data-edge-key="6" data-edge-id="torch-transformers">
-          <rect x="660.6" y="520" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="680" y="530" class="t-muted" font-size="8" text-anchor="middle">models</text>
+          <rect x="660.6" y="520" width="38.8" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="680" y="530" class="t-muted" style="fill: #b9ae9b" font-size="8" text-anchor="middle">models</text>
         </g>
         <g data-detail="context" data-edge-from="fastapi" data-edge-to="render" data-edge-label="compose" data-edge-key="7" data-edge-id="fastapi-render">
-          <rect x="638.2" y="195" width="43.6" height="14" rx="3" class="c-mask"/>
-          <text x="660" y="205" class="t-backend" font-size="8" text-anchor="middle">compose</text>
+          <rect x="638.2" y="195" width="43.6" height="14" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="660" y="205" class="t-backend" style="fill: #8fc29e" font-size="8" text-anchor="middle">compose</text>
         </g>
 
         <!-- Boundary labels (foreground masks keep routes out of titles) -->
@@ -195,18 +178,18 @@
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="564" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <text x="40" y="564" class="t-primary" style="fill: #f4eddf" font-size="12" font-weight="650">Legend</text>
           <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="40" data-legend-baseline="584" data-legend-width="78">
-            <rect x="40" y="575" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
-            <text x="62" y="584" class="t-muted" font-size="10" font-weight="500">Backend</text>
+            <rect x="40" y="575" width="16" height="10" rx="2.5" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1"/>
+            <text x="62" y="584" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">Backend</text>
           </g>
           <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="140" data-legend-baseline="584" data-legend-width="68">
-            <rect x="140" y="575" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
-            <text x="162" y="584" class="t-muted" font-size="10" font-weight="500">Cloud</text>
+            <rect x="140" y="575" width="16" height="10" rx="2.5" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1"/>
+            <text x="162" y="584" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">Cloud</text>
           </g>
           <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="230" data-legend-baseline="584" data-legend-width="83">
-            <rect x="230" y="575" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
-            <text x="252" y="584" class="t-muted" font-size="10" font-weight="500">External</text>
+            <rect x="230" y="575" width="16" height="10" rx="2.5" class="c-external" style="fill: rgba(126, 115, 96, 0.18); stroke: #b8ad99" stroke-width="1"/>
+            <text x="252" y="584" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">External</text>
           </g>
         </g>
       

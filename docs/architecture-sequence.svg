@@ -1,40 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" role="img" lang="en">
-<defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
-          </marker>
-          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
-          </marker>
-          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
-          </marker>
-          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
-          </marker>
-          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
-          </pattern>
-        </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 980" role="img" lang="en">
 
         <title id="archify-diagram-title">OpenCut v3 — production pipeline · 生产流水线</title>
         <desc id="archify-diagram-description">From still images + domain config to finished 1080×1920 mp4 · 从静态图与领域配置到成片</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" style="fill: #948978" />
           </marker>
           <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" style="fill: #dd6b3d" />
           </marker>
           <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" style="fill: #df9085" />
           </marker>
           <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" style="fill: #c0a4d0" />
           </marker>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" style="stroke-dasharray: 1 3; opacity: 0.78" stroke-width="0.5"/>
           </pattern>
         </defs>
 
@@ -45,78 +28,78 @@
 
 
         <!-- Lifelines -->
-        <path d="M 129.5 142 L 129.5 915" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 298.1 142 L 298.1 915" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 466.7 142 L 466.7 915" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 635.3 142 L 635.3 915" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 803.9 142 L 803.9 915" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 972.5 142 L 972.5 915" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 129.5 142 L 129.5 915" class="a-default" style="stroke: #948978" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 298.1 142 L 298.1 915" class="a-default" style="stroke: #948978" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 466.7 142 L 466.7 915" class="a-default" style="stroke: #948978" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 635.3 142 L 635.3 915" class="a-default" style="stroke: #948978" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 803.9 142 L 803.9 915" class="a-default" style="stroke: #948978" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 972.5 142 L 972.5 915" class="a-default" style="stroke: #948978" stroke-width="0.8" stroke-dasharray="3,7"/>
 
         <!-- Activations -->
 
 
         <!-- Messages -->
         <g data-edge-from="operator" data-edge-to="writer" data-edge-label="images + domain config · 图像 + 领域配置" data-edge-key="0" data-edge-id="m1">
-          <path data-composition-edge-from="operator" data-composition-edge-to="writer" data-composition-edge-id="m1" data-composition-points="136.5,180;291.1,180" d="M 136.5 180 L 291.1 180" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="operator" data-composition-edge-to="writer" data-composition-edge-id="m1" data-composition-points="136.5,180;291.1,180" d="M 136.5 180 L 291.1 180" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="103.80000000000001" y="160" width="220" height="16" rx="3" class="c-mask"/>
-          <text x="213.8" y="170" class="t-backend" font-size="9" text-anchor="middle">images + domain config · 图像 + 领域配置</text>
+          <rect x="103.80000000000001" y="160" width="220" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="213.8" y="170" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">images + domain config · 图像 + 领域配置</text>
         </g>
         </g>
 
         <g data-edge-from="writer" data-edge-to="voice" data-edge-label="narration script · 旁白脚本" data-edge-key="1" data-edge-id="m2">
-          <path data-composition-edge-from="writer" data-composition-edge-to="voice" data-composition-edge-id="m2" data-composition-points="305.1,250;459.7,250" d="M 305.1 250 L 459.7 250" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="writer" data-composition-edge-to="voice" data-composition-edge-id="m2" data-composition-points="305.1,250;459.7,250" d="M 305.1 250 L 459.7 250" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="306.2" y="230" width="152.4" height="16" rx="3" class="c-mask"/>
-          <text x="382.4" y="240" class="t-backend" font-size="9" text-anchor="middle">narration script · 旁白脚本</text>
+          <rect x="306.2" y="230" width="152.4" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="382.4" y="240" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">narration script · 旁白脚本</text>
         </g>
         </g>
 
         <g data-edge-from="voice" data-edge-to="aligner" data-edge-label="voiceover track · 配音轨" data-edge-key="2" data-edge-id="m3">
-          <path data-composition-edge-from="voice" data-composition-edge-to="aligner" data-composition-edge-id="m3" data-composition-points="473.7,320;628.3,320" d="M 473.7 320 L 628.3 320" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="voice" data-composition-edge-to="aligner" data-composition-edge-id="m3" data-composition-points="473.7,320;628.3,320" d="M 473.7 320 L 628.3 320" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="482.6" y="300" width="136.8" height="16" rx="3" class="c-mask"/>
-          <text x="551" y="310" class="t-backend" font-size="9" text-anchor="middle">voiceover track · 配音轨</text>
+          <rect x="482.6" y="300" width="136.8" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="551" y="310" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">voiceover track · 配音轨</text>
         </g>
         </g>
 
         <g data-edge-from="aligner" data-edge-to="composer" data-edge-label="shot list + cut plan · 分镜 + 切换方案" data-edge-key="3" data-edge-id="m4">
-          <path data-composition-edge-from="aligner" data-composition-edge-to="composer" data-composition-edge-id="m4" data-composition-points="642.3,410;796.9,410" d="M 642.3 410 L 796.9 410" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="aligner" data-composition-edge-to="composer" data-composition-edge-id="m4" data-composition-points="642.3,410;796.9,410" d="M 642.3 410 L 796.9 410" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="614.8" y="390" width="209.6" height="16" rx="3" class="c-mask"/>
-          <text x="719.5999999999999" y="400" class="t-backend" font-size="9" text-anchor="middle">shot list + cut plan · 分镜 + 切换方案</text>
+          <rect x="614.8" y="390" width="209.6" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="719.5999999999999" y="400" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">shot list + cut plan · 分镜 + 切换方案</text>
         </g>
         </g>
 
         <g data-edge-from="composer" data-edge-to="renderer" data-edge-label="visual timeline ready · 视觉时间线就绪" data-edge-key="4" data-edge-id="m5">
-          <path data-composition-edge-from="composer" data-composition-edge-to="renderer" data-composition-edge-id="m5" data-composition-points="810.9,500;965.5,500" d="M 810.9 500 L 965.5 500" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="composer" data-composition-edge-to="renderer" data-composition-edge-id="m5" data-composition-points="810.9,500;965.5,500" d="M 810.9 500 L 965.5 500" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="783.4000000000001" y="480" width="209.6" height="16" rx="3" class="c-mask"/>
-          <text x="888.2" y="490" class="t-backend" font-size="9" text-anchor="middle">visual timeline ready · 视觉时间线就绪</text>
+          <rect x="783.4000000000001" y="480" width="209.6" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="888.2" y="490" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">visual timeline ready · 视觉时间线就绪</text>
         </g>
         </g>
 
         <g data-edge-from="renderer" data-edge-to="composer" data-edge-label="pass-1 frames · 首轮画面" data-edge-key="5" data-edge-id="m6">
-          <path data-composition-edge-from="renderer" data-composition-edge-to="composer" data-composition-edge-id="m6" data-composition-points="965.5,580;810.9,580" d="M 965.5 580 L 810.9 580" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="renderer" data-composition-edge-to="composer" data-composition-edge-id="m6" data-composition-points="965.5,580;810.9,580" d="M 965.5 580 L 810.9 580" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="819.8000000000001" y="560" width="136.8" height="16" rx="3" class="c-mask"/>
-          <text x="888.2" y="570" class="t-backend" font-size="9" text-anchor="middle">pass-1 frames · 首轮画面</text>
+          <rect x="819.8000000000001" y="560" width="136.8" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="888.2" y="570" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">pass-1 frames · 首轮画面</text>
         </g>
         </g>
 
         <g data-edge-from="composer" data-edge-to="renderer" data-edge-label="BGM + subtitles muxed · 混音字幕" data-edge-key="6" data-edge-id="m7">
-          <path data-composition-edge-from="composer" data-composition-edge-to="renderer" data-composition-edge-id="m7" data-composition-points="810.9,660;965.5,660" d="M 810.9 660 L 965.5 660" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="composer" data-composition-edge-to="renderer" data-composition-edge-id="m7" data-composition-points="810.9,660;965.5,660" d="M 810.9 660 L 965.5 660" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="799" y="640" width="178.4" height="16" rx="3" class="c-mask"/>
-          <text x="888.2" y="650" class="t-backend" font-size="9" text-anchor="middle">BGM + subtitles muxed · 混音字幕</text>
+          <rect x="799" y="640" width="178.4" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="888.2" y="650" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">BGM + subtitles muxed · 混音字幕</text>
         </g>
         </g>
 
         <g data-edge-from="renderer" data-edge-to="operator" data-edge-label="1080×1920 mp4 ready · 成片交付" data-edge-key="7" data-edge-id="m8">
-          <path data-composition-edge-from="renderer" data-composition-edge-to="operator" data-composition-edge-id="m8" data-composition-points="965.5,760;136.5,760" d="M 965.5 760 L 136.5 760" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-composition-edge-from="renderer" data-composition-edge-to="operator" data-composition-edge-id="m8" data-composition-points="965.5,760;136.5,760" d="M 965.5 760 L 136.5 760" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
-          <rect x="467" y="740" width="168" height="16" rx="3" class="c-mask"/>
-          <text x="551" y="750" class="t-backend" font-size="9" text-anchor="middle">1080×1920 mp4 ready · 成片交付</text>
+          <rect x="467" y="740" width="168" height="16" rx="3" class="c-mask" style="fill: #231f18"/>
+          <text x="551" y="750" class="t-backend" style="fill: #8fc29e" font-size="9" text-anchor="middle">1080×1920 mp4 ready · 成片交付</text>
         </g>
         </g>
 
@@ -126,77 +109,77 @@
         <!-- Participants -->
         <g id="node-operator" data-node-id="operator" data-node-label="Operator · 运营者" tabindex="0" role="button" aria-label="Focus Operator · 运营者, uploads assets · 上传素材, Sequence participant" aria-pressed="false" data-node-kind="external" data-node-sublabel="uploads assets · 上传素材" data-node-context="Sequence participant">
           <title>Operator · 运营者 · uploads assets · 上传素材 · Sequence participant</title>
-          <rect x="62" y="72" width="135" height="54" rx="6" class="c-mask"/>
-          <rect x="62" y="72" width="135" height="54" rx="6" class="c-external" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(68 78) scale(0.6875)">
+          <rect x="62" y="72" width="135" height="54" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="62" y="72" width="135" height="54" rx="6" class="c-external" style="fill: rgba(126, 115, 96, 0.18); stroke: #b8ad99" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #b8ad99" transform="translate(68 78) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="129.5" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Operator · 运营者</text>
-          <text data-detail="context" x="129.5" y="111" class="t-muted" font-size="7" text-anchor="middle">uploads assets · 上传素材</text>
+          <text data-node-label="" data-detail-anchor="" x="129.5" y="94" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Operator · 运营者</text>
+          <text data-detail="context" x="129.5" y="111" class="t-muted" style="fill: #b9ae9b" font-size="7" text-anchor="middle">uploads assets · 上传素材</text>
         </g>
 
         <g id="node-writer" data-node-id="writer" data-node-label="Script · 脚本" tabindex="0" role="button" aria-label="Focus Script · 脚本, LLM · OpenAI SDK, Sequence participant" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="LLM · OpenAI SDK" data-node-context="Sequence participant">
           <title>Script · 脚本 · LLM · OpenAI SDK · Sequence participant</title>
-          <rect x="230.60000000000002" y="72" width="135" height="54" rx="6" class="c-mask"/>
-          <rect x="230.60000000000002" y="72" width="135" height="54" rx="6" class="c-cloud" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(236.60000000000002 78) scale(0.6875)">
+          <rect x="230.60000000000002" y="72" width="135" height="54" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="230.60000000000002" y="72" width="135" height="54" rx="6" class="c-cloud" style="fill: rgba(170, 119, 49, 0.16); stroke: #d8ad68" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #d8ad68" transform="translate(236.60000000000002 78) scale(0.6875)">
             <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="298.1" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Script · 脚本</text>
-          <text data-detail="context" x="298.1" y="111" class="t-muted" font-size="7" text-anchor="middle">LLM · OpenAI SDK</text>
+          <text data-node-label="" data-detail-anchor="" x="298.1" y="94" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Script · 脚本</text>
+          <text data-detail="context" x="298.1" y="111" class="t-muted" style="fill: #b9ae9b" font-size="7" text-anchor="middle">LLM · OpenAI SDK</text>
         </g>
 
         <g id="node-voice" data-node-id="voice" data-node-label="Voice · 语音" tabindex="0" role="button" aria-label="Focus Voice · 语音, edge-tts, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="edge-tts" data-node-context="Sequence participant">
           <title>Voice · 语音 · edge-tts · Sequence participant</title>
-          <rect x="399.2" y="72" width="135" height="54" rx="6" class="c-mask"/>
-          <rect x="399.2" y="72" width="135" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(405.2 78) scale(0.6875)">
+          <rect x="399.2" y="72" width="135" height="54" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="399.2" y="72" width="135" height="54" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(405.2 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="466.7" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Voice · 语音</text>
-          <text data-detail="context" x="466.7" y="111" class="t-muted" font-size="7" text-anchor="middle">edge-tts</text>
+          <text data-node-label="" data-detail-anchor="" x="466.7" y="94" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Voice · 语音</text>
+          <text data-detail="context" x="466.7" y="111" class="t-muted" style="fill: #b9ae9b" font-size="7" text-anchor="middle">edge-tts</text>
         </g>
 
         <g id="node-aligner" data-node-id="aligner" data-node-label="Aligner · 对齐器" tabindex="0" role="button" aria-label="Focus Aligner · 对齐器, PyTorch + Transformers, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="PyTorch + Transformers" data-node-context="Sequence participant">
           <title>Aligner · 对齐器 · PyTorch + Transformers · Sequence participant</title>
-          <rect x="567.8" y="72" width="135" height="54" rx="6" class="c-mask"/>
-          <rect x="567.8" y="72" width="135" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(573.8 78) scale(0.6875)">
+          <rect x="567.8" y="72" width="135" height="54" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="567.8" y="72" width="135" height="54" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(573.8 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="635.3" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Aligner · 对齐器</text>
-          <text data-detail="context" x="635.3" y="111" class="t-muted" font-size="7" text-anchor="middle">PyTorch + Transformers</text>
+          <text data-node-label="" data-detail-anchor="" x="635.3" y="94" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Aligner · 对齐器</text>
+          <text data-detail="context" x="635.3" y="111" class="t-muted" style="fill: #b9ae9b" font-size="7" text-anchor="middle">PyTorch + Transformers</text>
         </g>
 
         <g id="node-composer" data-node-id="composer" data-node-label="Composer · 合成器" tabindex="0" role="button" aria-label="Focus Composer · 合成器, BGM + subtitles · BGM + 字幕, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="BGM + subtitles · BGM + 字幕" data-node-context="Sequence participant">
           <title>Composer · 合成器 · BGM + subtitles · BGM + 字幕 · Sequence participant</title>
-          <rect x="736.4" y="72" width="135" height="54" rx="6" class="c-mask"/>
-          <rect x="736.4" y="72" width="135" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(742.4 78) scale(0.6875)">
+          <rect x="736.4" y="72" width="135" height="54" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="736.4" y="72" width="135" height="54" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(742.4 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="803.9" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Composer · 合成器</text>
-          <text data-detail="context" x="803.9" y="111" class="t-muted" font-size="7" text-anchor="middle">BGM + subtitles · BGM + 字幕</text>
+          <text data-node-label="" data-detail-anchor="" x="803.9" y="94" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Composer · 合成器</text>
+          <text data-detail="context" x="803.9" y="111" class="t-muted" style="fill: #b9ae9b" font-size="7" text-anchor="middle">BGM + subtitles · BGM + 字幕</text>
         </g>
 
         <g id="node-renderer" data-node-id="renderer" data-node-label="Renderer · 渲染器" tabindex="0" role="button" aria-label="Focus Renderer · 渲染器, ffmpeg · 1080×1920, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="ffmpeg · 1080×1920" data-node-context="Sequence participant">
           <title>Renderer · 渲染器 · ffmpeg · 1080×1920 · Sequence participant</title>
-          <rect x="905" y="72" width="135" height="54" rx="6" class="c-mask"/>
-          <rect x="905" y="72" width="135" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(911 78) scale(0.6875)">
+          <rect x="905" y="72" width="135" height="54" rx="6" class="c-mask" style="fill: #231f18"/>
+          <rect x="905" y="72" width="135" height="54" rx="6" class="c-backend" style="fill: rgba(63, 132, 92, 0.16); stroke: #8fc29e" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" style="stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; color: #8fc29e" transform="translate(911 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="972.5" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Renderer · 渲染器</text>
-          <text data-detail="context" x="972.5" y="111" class="t-muted" font-size="7" text-anchor="middle">ffmpeg · 1080×1920</text>
+          <text data-node-label="" data-detail-anchor="" x="972.5" y="94" class="t-primary" style="fill: #f4eddf" font-size="11" font-weight="600" text-anchor="middle">Renderer · 渲染器</text>
+          <text data-detail="context" x="972.5" y="111" class="t-muted" style="fill: #b9ae9b" font-size="7" text-anchor="middle">ffmpeg · 1080×1920</text>
         </g>
 
         <!-- Legend -->
         <g data-legend="">
-          <text x="40" y="906" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <text x="40" y="906" class="t-primary" style="fill: #f4eddf" font-size="12" font-weight="650">Legend</text>
           <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="926" data-legend-width="78">
-            <path d="M 40 923 L 74 923" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-            <text x="83" y="926" class="t-muted" font-size="10" font-weight="500">request</text>
+            <path d="M 40 923 L 74 923" class="a-emphasis" style="stroke: #dd6b3d" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="926" class="t-muted" style="fill: #b9ae9b" font-size="10" font-weight="500">request</text>
           </g>
         </g>
       
